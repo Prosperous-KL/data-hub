@@ -70,6 +70,7 @@ app.get("/health", (_req, res) => {
 
 console.log("[app] mounting auth routes at /api/auth");
 app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/payment", paymentRoutes);
