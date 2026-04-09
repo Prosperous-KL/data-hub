@@ -89,6 +89,48 @@
 				"."
 			],
 			"isBackground": false
+		},
+		{
+			"label": "install-gh-and-verify-20260409",
+			"type": "shell",
+			"command": "cmd",
+			"args": [
+				"/c",
+				"winget --version && winget install --id GitHub.cli -e --silent --accept-package-agreements --accept-source-agreements && gh --version"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "gh-absolute-auth-and-publish-20260409",
+			"type": "shell",
+			"command": "cmd",
+			"args": [
+				"/c",
+				"\"C:\\Program Files\\GitHub CLI\\gh.exe\" --version && \"C:\\Program Files\\GitHub CLI\\gh.exe\" auth status && \"C:\\Program Files\\GitHub CLI\\gh.exe\" repo create data-hub-20260409 --source . --remote origin --public --push"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "gh-auth-check-pwsh-20260409",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-ExecutionPolicy",
+				"Bypass",
+				"-Command",
+				"& 'C:\\Program Files\\GitHub CLI\\gh.exe' --version; & 'C:\\Program Files\\GitHub CLI\\gh.exe' auth status"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "gh-check-shortpath-20260409",
+			"type": "shell",
+			"command": "C:\\Progra~1\\GitHub~1\\gh.exe",
+			"args": [
+				"--version"
+			],
+			"isBackground": false
 		}
 	]
 }
