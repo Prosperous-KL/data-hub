@@ -1,0 +1,94 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "backend-install-and-test",
+			"type": "shell",
+			"command": "cmd",
+			"args": [
+				"/c",
+				"cd backend && npm install && npm test"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "full-end-to-end-test",
+			"type": "shell",
+			"command": "cmd",
+			"args": [
+				"/c",
+				"cd backend && npm install && npm test && cd ..\\frontend && npm install && npx playwright install && npm run test:e2e"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "git-init",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"init"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "git-untrack-node_modules",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"rm",
+				"-r",
+				"--cached",
+				"backend/node_modules",
+				"frontend/node_modules"
+			],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "untrack node_modules from git index",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"rm",
+				"-r",
+				"--cached",
+				"--",
+				"node_modules",
+				"backend/node_modules",
+				"frontend/node_modules"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "git status short",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"status",
+				"--short"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "git-state-snapshot-20260409",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"status",
+				"-sb"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "git-add-all-20260409",
+			"type": "shell",
+			"command": "git",
+			"args": [
+				"add",
+				"."
+			],
+			"isBackground": false
+		}
+	]
+}
