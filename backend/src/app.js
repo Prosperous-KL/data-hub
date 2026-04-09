@@ -19,18 +19,22 @@ const configuredOrigins = (env.CORS_ORIGIN || "")
   .filter(Boolean);
 const allowAnyOrigin = configuredOrigins.includes("*");
 
-app.use(helmet());
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowAnyOrigin) {
-        return callback(null, true);
-      }
-
-      return callback(null, configuredOrigins.includes(origin));
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowAnyOrigin) {
+      return callback(null, true);
     }
-  })
-);
+
+    return callback(null, configuredOrigins.includes(origin));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  optionsSuccessStatus: 200
+};
+
+app.use(helmet());
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(
   express.json({
     limit: "1mb",

@@ -68,7 +68,7 @@ sudo certbot --nginx -d api.yourdomain.com
    - Framework: Next.js
    - Root directory: `frontend`
    - Environment variable:
-     - `NEXT_PUBLIC_API_URL=https://api.yourdomain.com`
+    - `NEXT_PUBLIC_API_URL=https://data-hub-6kwj.onrender.com`
 3. Deploy.
 
 ## 4) Environment Variables
@@ -79,7 +79,7 @@ Backend `.env` required keys:
 - DATABASE_URL
 - JWT_SECRET
 - JWT_EXPIRES_IN
-- CORS_ORIGIN
+- CORS_ORIGIN (set to your deployed frontend origin, for example `https://your-frontend-domain.com`)
 - APP_BASE_URL
 - PAYMENT_PROVIDER (SIMULATED | HUBTEL | EXPRESSPAY)
 - PAYMENT_CALLBACK_TOKEN
@@ -93,7 +93,7 @@ Backend `.env` required keys:
     - EXPRESSPAY_CALLBACK_SECRET
 
 Frontend `.env.local`:
-- NEXT_PUBLIC_API_URL
+- NEXT_PUBLIC_API_URL (set to your deployed backend URL, for example `https://data-hub-6kwj.onrender.com`)
 
 ## 5) Optional Docker Deployment
 

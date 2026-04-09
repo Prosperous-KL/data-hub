@@ -2,7 +2,8 @@
 
 import { getToken } from "./auth";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const DEFAULT_API_URL = "https://data-hub-6kwj.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL;
 
 export async function apiRequest(path, options = {}) {
   const headers = new Headers(options.headers || {});
