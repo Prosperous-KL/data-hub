@@ -18,14 +18,24 @@ const configuredOrigins = (env.CORS_ORIGIN || "")
   .map((origin) => origin.trim())
   .filter(Boolean);
 const allowAnyOrigin = configuredOrigins.includes("*");
+const hasConfiguredOrigins = configuredOrigins.length > 0;
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowAnyOrigin) {
+    if (!origin || allowAnyOrigin || !hasConfiguredOrigins) {
       return callback(null, true);
     }
 
-    return callback(null, configuredOrigins.includes(origin));
+    if (configuredOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    const corsError = new Error(
+      `CORS blocked for origin: ${origin}. Set CORS_ORIGIN to include this origin.`
+    );
+    corsError.statusCode = 403;
+    corsError.code = "CORS_ERROR";
+    return callback(corsError);
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],

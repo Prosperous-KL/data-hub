@@ -9,7 +9,9 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   JWT_SECRET: z.string().min(16),
   JWT_EXPIRES_IN: z.string().default("7d"),
-  CORS_ORIGIN: z.string().default("http://localhost:3000"),
+  CORS_ORIGIN: z
+    .string()
+    .default(process.env.NODE_ENV === "production" ? "*" : "http://localhost:3000"),
   APP_BASE_URL: z.string().url().default("http://localhost:4000"),
   PAYMENT_PROVIDER: z.enum(["SIMULATED", "HUBTEL", "EXPRESSPAY"]).default("SIMULATED"),
   HUBTEL_CLIENT_ID: z.string().optional(),

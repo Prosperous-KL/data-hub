@@ -22,7 +22,7 @@ export default function LoginPage() {
     try {
       const response = await apiRequest("/api/auth/login", {
         method: "POST",
-        body: JSON.stringify(form)
+        body: form
       });
       saveSession(response.token, response.user);
       router.replace("/dashboard");

@@ -23,7 +23,8 @@ describe("CORS policy", () => {
       .get("/health")
       .set("Origin", "https://evil.example.com");
 
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(403);
+    expect(response.body.code).toBe("CORS_ERROR");
     expect(response.headers["access-control-allow-origin"]).toBeUndefined();
   });
 });
