@@ -13,11 +13,22 @@ const vtuRoutes = require("./modules/vtu/vtu.routes");
 const adminRoutes = require("./modules/admin/admin.routes");
 
 const app = express();
+const configuredOrigins = (env.CORS_ORIGIN || "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+const allowAnyOrigin = configuredOrigins.includes("*");
 
 app.use(helmet());
 app.use(
   cors({
-    origin: "*",
+    origin: (origin, callback) => {
+      if (!origin || allowAnyOrigin) {
+        return callback(null, true);
+      }
+
+      return callback(null, configuredOrigins.includes(origin));
+    }
   })
 );
 app.use(
