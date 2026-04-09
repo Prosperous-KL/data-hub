@@ -20,13 +20,35 @@ const configuredOrigins = (env.CORS_ORIGIN || "")
 const allowAnyOrigin = configuredOrigins.includes("*");
 const hasConfiguredOrigins = configuredOrigins.length > 0;
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowAnyOrigin || !hasConfiguredOrigins) {
-      return callback(null, true);
+function isAllowedOrigin(origin) {
+  if (!origin) {
+    return true;
+  }
+
+  if (allowAnyOrigin || !hasConfiguredOrigins) {
+    return true;
+  }
+
+  return configuredOrigins.some((allowedOrigin) => {
+    if (allowedOrigin === origin) {
+      return true;
     }
 
-    if (configuredOrigins.includes(origin)) {
+    if (!allowedOrigin.includes("*")) {
+      return false;
+    }
+
+    const escapedPattern = allowedOrigin
+      .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+      .replace(/\*/g, ".*");
+
+    return new RegExp(`^${escapedPattern}$`).test(origin);
+  });
+}
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
 
