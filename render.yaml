@@ -18,9 +18,9 @@ services:
       - key: JWT_EXPIRES_IN
         value: 7d
       - key: CORS_ORIGIN
-        sync: false
+        value: https://*.onrender.com,http://localhost:3000
       - key: APP_BASE_URL
-        sync: false
+        value: https://data-hub-6kwj.onrender.com
       - key: PAYMENT_PROVIDER
         value: SIMULATED
       - key: PAYMENT_CALLBACK_TOKEN
