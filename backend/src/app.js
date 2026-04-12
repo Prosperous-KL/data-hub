@@ -95,6 +95,14 @@ app.get("/health", (_req, res) => {
   res.json({ success: true, service: "Prosperous Data Hub API" });
 });
 
+app.get("/", (_req, res) => {
+  res.json({
+    success: true,
+    service: "Prosperous Data Hub API",
+    message: "API is running. Use /health or /api/* endpoints."
+  });
+});
+
 console.log("[app] mounting auth routes at /api/auth");
 app.use("/api/auth", authRoutes);
 app.use("/auth", authRoutes);
