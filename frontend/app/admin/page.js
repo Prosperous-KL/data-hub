@@ -24,10 +24,12 @@ export default function AdminPage() {
         apiRequest("/api/admin/users?limit=50"),
         apiRequest("/api/admin/transactions/failed?limit=100")
       ]);
-      setUsers(usersResponse.users || []);
-      setFailedTransactions(failedResponse.transactions || []);
+      setUsers(Array.isArray(usersResponse?.users) ? usersResponse.users : []);
+      setFailedTransactions(Array.isArray(failedResponse?.transactions) ? failedResponse.transactions : []);
     } catch (requestError) {
       setError(requestError.message);
+      setUsers([]);
+      setFailedTransactions([]);
     } finally {
       setLoading(false);
     }
@@ -47,7 +49,8 @@ export default function AdminPage() {
         method: "POST",
         body: JSON.stringify(refundForm)
       });
-      setRefundMessage(`Refund posted. Transaction: ${response.refund.transaction.id}`);
+      const txId = response?.refund?.transaction?.id || "N/A";
+      setRefundMessage(`Refund posted. Transaction: ${txId}`);
       setRefundForm({ transactionId: "", reason: "" });
       await loadData();
     } catch (requestError) {
