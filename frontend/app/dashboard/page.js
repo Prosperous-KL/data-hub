@@ -24,10 +24,12 @@ export default function DashboardPage() {
           apiRequest("/api/transactions?limit=5")
         ]);
 
-        setWallet(walletResponse.wallet);
-        setTransactions(txResponse.transactions);
+        setWallet(walletResponse?.wallet || null);
+        setTransactions(Array.isArray(txResponse?.transactions) ? txResponse.transactions : []);
       } catch (requestError) {
         setError(requestError.message);
+        setWallet(null);
+        setTransactions([]);
       } finally {
         setLoading(false);
       }
@@ -51,7 +53,7 @@ export default function DashboardPage() {
               <StatCard title="Wallet Balance" value={`GHS ${Number(wallet.available_balance).toFixed(2)}`} tone="success" />
               <StatCard title="Locked Balance" value={`GHS ${Number(wallet.locked_balance).toFixed(2)}`} tone="info" />
               <StatCard title="Recent Transactions" value={String(transactions.length)} tone="warning" />
-              <StatCard title="Wallet ID" value={wallet.id.slice(0, 8)} tone="default" />
+              <StatCard title="Wallet ID" value={String(wallet.id || "N/A").slice(0, 8)} tone="default" />
             </div>
           )}
 
