@@ -18,7 +18,7 @@ services:
       - key: JWT_EXPIRES_IN
         value: 7d
       - key: CORS_ORIGIN
-        value: https://*.onrender.com,http://localhost:3000
+        value: http://localhost:3000,https://data-hub-1-m4o4.onrender.com,https://data-hub-6kwj.onrender.com,https://*.onrender.com
       - key: APP_BASE_URL
         value: https://data-hub-6kwj.onrender.com
       - key: PAYMENT_PROVIDER
