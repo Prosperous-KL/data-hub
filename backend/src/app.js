@@ -25,6 +25,11 @@ function isAllowedOrigin(origin) {
     return true;
   }
 
+  const isRenderOrigin = /^https:\/\/[a-z0-9-]+\.onrender\.com$/i.test(origin);
+  if (env.NODE_ENV === "production" && isRenderOrigin) {
+    return true;
+  }
+
   if (allowAnyOrigin || !hasConfiguredOrigins) {
     return true;
   }
