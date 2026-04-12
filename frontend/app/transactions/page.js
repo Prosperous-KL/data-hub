@@ -15,11 +15,13 @@ export default function TransactionsPage() {
   useEffect(() => {
     async function loadData() {
       setLoading(true);
+      setError("");
       try {
         const response = await apiRequest("/api/transactions?limit=200");
-        setTransactions(response.transactions || []);
+        setTransactions(Array.isArray(response?.transactions) ? response.transactions : []);
       } catch (requestError) {
         setError(requestError.message);
+        setTransactions([]);
       } finally {
         setLoading(false);
       }
