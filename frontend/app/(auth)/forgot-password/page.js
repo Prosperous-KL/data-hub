@@ -113,8 +113,8 @@ export default function ForgotPasswordPage() {
             type="text"
             placeholder="OTP code"
             value={otpCode}
-            onChange={(event) => setOtpCode(event.target.value)}
-            maxLength={6}
+            onChange={(event) => setOtpCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7))}
+            maxLength={7}
             required
           />
 

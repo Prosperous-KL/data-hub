@@ -41,7 +41,7 @@ export default function AccountRecoveryPage() {
 
       setOtpSessionId(response.otpSessionId || "");
       setDevOtp(response.devOtp || "");
-      setMessage(`OTP sent to ${response.target || identifier}`);
+      setMessage(response.message || `Prosperous Data Hub Confirmation sent via ${response.deliveryMethod || "delivery"}.`);
       setStep("verify");
     } catch (requestError) {
       setError(requestError.message);
@@ -166,17 +166,17 @@ export default function AccountRecoveryPage() {
                   <input
                     className="input text-center"
                     type="text"
-                    placeholder="Enter 6-digit OTP"
+                    placeholder="Enter P123456 code"
                     value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    maxLength="6"
+                    onChange={(e) => setOtpCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7))}
+                    maxLength="7"
                     disabled={loading}
                   />
                 </div>
 
                 <button
                   onClick={confirmRecovery}
-                  disabled={loading || otpCode.length !== 6}
+                  disabled={loading || otpCode.length !== 7}
                   className="btn-primary w-full disabled:opacity-50"
                 >
                   {loading ? "Verifying..." : "Verify & Recover"}

@@ -25,7 +25,7 @@ export default function DeleteAccountPage() {
   const [message, setMessage] = useState("");
 
   const confirmRequired = "DELETE MY ACCOUNT";
-  const canDelete = password && confirmText === confirmRequired && otpSessionId && otpCode.length === 6;
+  const canDelete = password && confirmText === confirmRequired && otpSessionId && otpCode.length === 7;
 
   async function requestOtp() {
     setSendingOtp(true);
@@ -49,7 +49,7 @@ export default function DeleteAccountPage() {
 
       setOtpSessionId(response.otpSessionId || "");
       setDevOtp(response.devOtp || "");
-      setMessage(`OTP sent to ${response.target || target}`);
+      setMessage(response.message || `Prosperous Data Hub Confirmation sent via ${response.deliveryMethod || "delivery"}.`);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -157,11 +157,11 @@ export default function DeleteAccountPage() {
                 <input
                   className="input"
                   type="text"
-                  placeholder="Enter 6-digit OTP"
+                  placeholder="Enter P123456 code"
                   value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  onChange={(e) => setOtpCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7))}
                   disabled={loading}
-                  maxLength={6}
+                  maxLength={7}
                 />
                 {devOtp && <p className="mt-1 text-xs text-slate-500">Dev OTP: {devOtp}</p>}
               </div>

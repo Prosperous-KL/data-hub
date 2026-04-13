@@ -59,7 +59,7 @@ export default function RegisterPage() {
 
       setOtpSessionId(response.otpSessionId || "");
       setDevOtp(response.devOtp || "");
-      setMessage(`OTP sent to ${response.target || target}.`);
+      setMessage(response.message || `Prosperous Data Hub Confirmation sent via ${response.deliveryMethod || "delivery"}.`);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -171,10 +171,10 @@ export default function RegisterPage() {
             <input
               className="input mt-2"
               type="text"
-              placeholder="Enter 6-digit OTP"
+              placeholder="Enter P123456 code"
               value={otpCode}
-              onChange={(event) => setOtpCode(event.target.value)}
-              maxLength={6}
+              onChange={(event) => setOtpCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7))}
+              maxLength={7}
               required
             />
 

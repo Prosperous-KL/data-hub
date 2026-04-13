@@ -68,6 +68,10 @@ export default function BuyDataPage() {
         body: JSON.stringify(form)
       });
       setResult(response);
+
+      if (response?.status === "pending_payment" && response?.checkoutUrl) {
+        window.open(response.checkoutUrl, "_blank", "noopener,noreferrer");
+      }
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -147,8 +151,19 @@ export default function BuyDataPage() {
             <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
               <p className="font-semibold">{result.message}</p>
               <p className="mt-1">Status: {result.status}</p>
-              <p>Purchase ID: {result.purchaseId}</p>
-              <p>Transaction ID: {result.transactionId}</p>
+              {result.approvalMessage && <p className="mt-1">{result.approvalMessage}</p>}
+              {result.paymentId && <p>Payment ID: {result.paymentId}</p>}
+              {result.purchaseId && <p>Purchase ID: {result.purchaseId}</p>}
+              {result.transactionId && <p>Transaction ID: {result.transactionId}</p>}
+              {result.checkoutUrl && (
+                <button
+                  type="button"
+                  className="btn-primary mt-3"
+                  onClick={() => window.open(result.checkoutUrl, "_blank", "noopener,noreferrer")}
+                >
+                  Open Payment Prompt
+                </button>
+              )}
             </div>
           )}
         </section>

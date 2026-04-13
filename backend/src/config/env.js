@@ -5,6 +5,10 @@ dotenv.config();
 
 const defaultAppBaseUrl = process.env.RENDER_EXTERNAL_URL || "http://localhost:4000";
 
+function optionalEmailFromEnv() {
+  return z.preprocess((value) => (value === "" ? undefined : value), z.string().email().optional());
+}
+
 const envSchema = z
   .object({
   PORT: z.coerce.number().default(4000),
@@ -16,7 +20,22 @@ const envSchema = z
     .string()
     .default(process.env.NODE_ENV === "production" ? "*" : "http://localhost:3000"),
   APP_BASE_URL: z.string().url().default(defaultAppBaseUrl),
-  PAYMENT_PROVIDER: z.enum(["SIMULATED", "HUBTEL", "EXPRESSPAY"]).default("SIMULATED"),
+  SMTP_GMAIL_USER: optionalEmailFromEnv(),
+  SMTP_GMAIL_APP_PASSWORD: z.string().optional(),
+  SMTP_FROM_NAME: z.string().default("Prosperous Data Hub"),
+  HUBTEL_SMS_BASE_URL: z.string().url().default("https://smsc.hubtel.com/v1/messages/send"),
+  HUBTEL_SMS_CLIENT_ID: z.string().optional(),
+  HUBTEL_SMS_CLIENT_SECRET: z.string().optional(),
+  HUBTEL_SMS_FROM: z.string().optional(),
+  PAYMENT_PROVIDER: z.enum(["SIMULATED", "MTN", "HUBTEL", "EXPRESSPAY"]).default("SIMULATED"),
+  MTN_ENV: z.enum(["sandbox", "production"]).default("sandbox"),
+  MTN_BASE_URL: z.string().url().optional(),
+  MTN_COLLECTION_PRIMARY_KEY: z.string().optional(),
+  MTN_COLLECTION_USER_ID: z.string().optional(),
+  MTN_COLLECTION_API_KEY: z.string().optional(),
+  MTN_COLLECTION_SUBSCRIPTION_KEY: z.string().optional(),
+  MTN_TARGET_ENV: z.enum(["sandbox", "production"]).default("sandbox"),
+  MTN_CURRENCY: z.string().default("GHS"),
   HUBTEL_CLIENT_ID: z.string().optional(),
   HUBTEL_CLIENT_SECRET: z.string().optional(),
   HUBTEL_SIGNING_SECRET: z.string().optional(),
@@ -34,6 +53,100 @@ const envSchema = z
   ADMIN_EMAIL: z.string().email().default("admin@prosperoushub.com")
   })
   .superRefine((env, ctx) => {
+    if (env.PAYMENT_PROVIDER === "HUBTEL") {
+      if (!env.HUBTEL_CLIENT_ID) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["HUBTEL_CLIENT_ID"],
+          message: "HUBTEL_CLIENT_ID is required when PAYMENT_PROVIDER=HUBTEL"
+        });
+      }
+
+      if (!env.HUBTEL_CLIENT_SECRET) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["HUBTEL_CLIENT_SECRET"],
+          message: "HUBTEL_CLIENT_SECRET is required when PAYMENT_PROVIDER=HUBTEL"
+        });
+      }
+
+      if (!env.HUBTEL_SIGNING_SECRET) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["HUBTEL_SIGNING_SECRET"],
+          message: "HUBTEL_SIGNING_SECRET is required when PAYMENT_PROVIDER=HUBTEL"
+        });
+      }
+
+      if (!env.HUBTEL_BASE_URL) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["HUBTEL_BASE_URL"],
+          message: "HUBTEL_BASE_URL is required when PAYMENT_PROVIDER=HUBTEL"
+        });
+      }
+    }
+
+    if (env.PAYMENT_PROVIDER === "MTN") {
+      if (!env.MTN_BASE_URL) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["MTN_BASE_URL"],
+          message: "MTN_BASE_URL is required when PAYMENT_PROVIDER=MTN"
+        });
+      }
+
+      if (!env.MTN_COLLECTION_USER_ID) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["MTN_COLLECTION_USER_ID"],
+          message: "MTN_COLLECTION_USER_ID is required when PAYMENT_PROVIDER=MTN"
+        });
+      }
+
+      if (!env.MTN_COLLECTION_API_KEY) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["MTN_COLLECTION_API_KEY"],
+          message: "MTN_COLLECTION_API_KEY is required when PAYMENT_PROVIDER=MTN"
+        });
+      }
+
+      if (!env.MTN_COLLECTION_SUBSCRIPTION_KEY) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["MTN_COLLECTION_SUBSCRIPTION_KEY"],
+          message: "MTN_COLLECTION_SUBSCRIPTION_KEY is required when PAYMENT_PROVIDER=MTN"
+        });
+      }
+    }
+
+    if (env.HUBTEL_SMS_CLIENT_ID || env.HUBTEL_SMS_CLIENT_SECRET || env.HUBTEL_SMS_FROM) {
+      if (!env.HUBTEL_SMS_CLIENT_ID) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["HUBTEL_SMS_CLIENT_ID"],
+          message: "HUBTEL_SMS_CLIENT_ID is required when Hubtel SMS delivery is configured"
+        });
+      }
+
+      if (!env.HUBTEL_SMS_CLIENT_SECRET) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["HUBTEL_SMS_CLIENT_SECRET"],
+          message: "HUBTEL_SMS_CLIENT_SECRET is required when Hubtel SMS delivery is configured"
+        });
+      }
+
+      if (!env.HUBTEL_SMS_FROM) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["HUBTEL_SMS_FROM"],
+          message: "HUBTEL_SMS_FROM is required when Hubtel SMS delivery is configured"
+        });
+      }
+    }
+
     if (env.VTU_PROVIDER === "REAL") {
       if (!env.VTU_API_KEY) {
         ctx.addIssue({

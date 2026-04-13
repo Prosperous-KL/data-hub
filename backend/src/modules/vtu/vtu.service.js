@@ -3,6 +3,7 @@ const pool = require("../../db/pool");
 const { withTransaction } = require("../../db/tx");
 const ApiError = require("../../utils/apiError");
 const walletService = require("../wallet/wallet.service");
+const paymentService = require("../payment/payment.service");
 const { DATA_BUNDLES } = require("../../utils/constants");
 const { sendDataBundle } = require("./vtu.provider");
 
@@ -36,6 +37,30 @@ function getBundle(network, bundleCode) {
 
 async function buyData({ userId, network, bundleCode, phoneNumber, momoNumber, idempotencyKey }) {
   const bundle = getBundle(network, bundleCode);
+
+  const wallet = await walletService.getWalletByUserId(userId);
+  const availableBalance = Number(wallet.available_balance || 0);
+
+  if (availableBalance < Number(bundle.amount)) {
+    const payment = await paymentService.initiatePayment({
+      userId,
+      amount: bundle.amount,
+      momoNumber,
+      provider: network,
+      idempotencyKey: `${idempotencyKey}-fund`
+    });
+
+    return {
+      status: "pending_payment",
+      message: "Payment prompt initiated. Approve on your phone to continue.",
+      approvalMessage: payment.approvalMessage,
+      checkoutUrl: payment.checkoutUrl,
+      paymentId: payment.payment.id,
+      requiredAmount: Number(bundle.amount),
+      currentBalance: availableBalance
+    };
+  }
+
   const reference = `VTU-${uuidv4()}`;
 
   const debit = await walletService.debitWallet({

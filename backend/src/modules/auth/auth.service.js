@@ -5,6 +5,7 @@ const { withTransaction } = require("../../db/tx");
 const pool = require("../../db/pool");
 const env = require("../../config/env");
 const ApiError = require("../../utils/apiError");
+const { sendAuthOtp } = require("./otpDelivery");
 
 const memoryUsers = [];
 const memoryOtps = [];
@@ -90,7 +91,7 @@ function maskTarget(channel, target) {
 }
 
 function buildOtpCode() {
-  return String(randomInt(0, 1000000)).padStart(6, "0");
+  return `P${String(randomInt(0, 1000000)).padStart(6, "0")}`;
 }
 
 function buildOtpDigest({ code, target, purpose }) {
@@ -152,30 +153,13 @@ function logMemoryFallbackOnce(error) {
   });
 }
 
-function deliverOtp({ code, channel, target, purpose }) {
-  if (channel === "EMAIL") {
-    console.log(`
-╔════════════════════════════════════════════════════════╗
-║            📧 EMAIL OTP DELIVERY (MOCK)              ║
-╠════════════════════════════════════════════════════════╣
-║ Recipient: ${target.padEnd(50)} ║
-║ Purpose:   ${purpose.padEnd(50)} ║
-║ Code:      ${code.padEnd(50)} ║
-║ Valid for: 10 minutes                                 ║
-╚════════════════════════════════════════════════════════╝
-    `);
-  } else if (channel === "PHONE") {
-    console.log(`
-╔════════════════════════════════════════════════════════╗
-║           📱 SMS OTP DELIVERY (MOCK)                 ║
-╠════════════════════════════════════════════════════════╣
-║ Recipient: ${target.padEnd(50)} ║
-║ Purpose:   ${purpose.padEnd(50)} ║
-║ Code:      ${code.padEnd(50)} ║
-║ Valid for: 10 minutes                                 ║
-╚════════════════════════════════════════════════════════╝
-    `);
-  }
+async function deliverOtp({ code, channel, target, purpose }) {
+  return sendAuthOtp({
+    code,
+    channel,
+    target,
+    purpose
+  });
 }
 
 async function registerInMemory({ fullName, email, phone, password }) {
@@ -403,8 +387,7 @@ async function requestOtp({ purpose, channel, target }) {
 
   const otp = await createOtpRecord({ purpose, channel, target: normalizedTarget });
 
-  // Simulate OTP delivery
-  deliverOtp({
+  const delivery = await deliverOtp({
     code: otp.code,
     channel,
     target: normalizedTarget,
@@ -422,8 +405,8 @@ async function requestOtp({ purpose, channel, target }) {
     expiresInSeconds: otp.expiresInSeconds,
     channel,
     target: maskTarget(channel, normalizedTarget),
-    deliveryMethod: channel === "EMAIL" ? "Email" : "SMS",
-    message: `OTP sent to ${channel === "EMAIL" ? "email" : "phone number"}`
+    deliveryMethod: delivery.deliveryMethod,
+    message: `Prosperous Data Hub Confirmation sent via ${delivery.deliveryMethod}`
   };
 
   if (env.NODE_ENV !== "production") {

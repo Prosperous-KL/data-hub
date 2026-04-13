@@ -1,6 +1,7 @@
 process.env.NODE_ENV = "test";
 process.env.DATABASE_URL = "postgres://postgres:postgres@localhost:5432/prosperous_data_hub";
 process.env.JWT_SECRET = "test_secret_test_secret_123";
+process.env.PAYMENT_PROVIDER = "SIMULATED";
 process.env.PAYMENT_CALLBACK_TOKEN = "callback_secret_token";
 process.env.ADMIN_EMAIL = "admin@prosperoushub.com";
 process.env.PAYMENT_CALLBACK_PROVIDER = "TOKEN";
