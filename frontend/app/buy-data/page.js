@@ -138,6 +138,7 @@ export default function BuyDataPage() {
               <p className="font-semibold">{result.message}</p>
               <p className="mt-1">Status: {result.status}</p>
               <p>Purchase ID: {result.purchaseId}</p>
+              <p>Transaction ID: {result.transactionId}</p>
             </div>
           )}
         </section>
