@@ -3,7 +3,23 @@ const { v4: uuidv4 } = require("uuid");
 const env = require("../../config/env");
 const { buildHubtelSignatureHeaders, buildExpressPaySignatureHeaders } = require("../../utils/paymentSignatures");
 
+function normalizeGhanaMsisdn(phoneNumber) {
+  const digits = String(phoneNumber || "").replace(/\D/g, "");
+
+  if (digits.startsWith("233") && digits.length === 12) {
+    return digits;
+  }
+
+  if (digits.startsWith("0") && digits.length === 10) {
+    return `233${digits.slice(1)}`;
+  }
+
+  return digits;
+}
+
 async function initiateMomoCharge({ amount, momoNumber, provider, externalReference }) {
+  const msisdn = normalizeGhanaMsisdn(momoNumber);
+
   if (env.PAYMENT_PROVIDER === "SIMULATED") {
     return {
       providerReference: `SIM-${uuidv4()}`,
@@ -15,7 +31,7 @@ async function initiateMomoCharge({ amount, momoNumber, provider, externalRefere
   if (env.PAYMENT_PROVIDER === "HUBTEL") {
     const body = {
       amount,
-      customerNumber: momoNumber,
+      customerNumber: msisdn,
       channel: provider,
       clientReference: externalReference
     };
@@ -41,7 +57,7 @@ async function initiateMomoCharge({ amount, momoNumber, provider, externalRefere
 
   const body = {
     amount,
-    mobileNumber: momoNumber,
+    mobileNumber: msisdn,
     network: provider,
     requestId: externalReference
   };

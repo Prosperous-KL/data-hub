@@ -7,6 +7,13 @@ import ErrorAlert from "../../components/ErrorAlert";
 import LoadingState from "../../components/LoadingState";
 import { apiRequest } from "../../lib/api";
 
+const ghPhoneRegex = /^(?:\+233|233|0)(?:2[03456789]|5\d)\d{7}$/;
+
+function isValidGhanaPhone(value) {
+  const normalized = String(value || "").replace(/[\s-]/g, "").trim();
+  return ghPhoneRegex.test(normalized);
+}
+
 export default function WalletFundingPage() {
   const [form, setForm] = useState({ amount: "", momoNumber: "", provider: "MTN" });
   const [loading, setLoading] = useState(false);
@@ -18,6 +25,12 @@ export default function WalletFundingPage() {
     setLoading(true);
     setError("");
     setResult(null);
+
+    if (!isValidGhanaPhone(form.momoNumber)) {
+      setError("Enter a valid Ghana phone number to pay from (e.g. 024xxxxxxx or +23324xxxxxxx).");
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await apiRequest("/api/payment/initiate", {
@@ -44,7 +57,7 @@ export default function WalletFundingPage() {
       <AppShell>
         <section className="panel max-w-2xl animate-floatUp p-5">
           <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>Fund Wallet (MoMo)</h2>
-          <p className="mt-1 text-sm text-slate-600">Initiate Mobile Money funding and approve on your phone.</p>
+          <p className="mt-1 text-sm text-slate-600">Enter the phone number that will approve the MoMo payment.</p>
 
           <ErrorAlert message={error} />
 
@@ -69,7 +82,7 @@ export default function WalletFundingPage() {
             <input
               className="input"
               type="text"
-              placeholder="MoMo number"
+              placeholder="Phone number to pay from"
               value={form.momoNumber}
               onChange={(event) => setForm({ ...form, momoNumber: event.target.value })}
               required
