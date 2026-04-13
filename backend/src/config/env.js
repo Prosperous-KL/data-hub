@@ -5,7 +5,8 @@ dotenv.config();
 
 const defaultAppBaseUrl = process.env.RENDER_EXTERNAL_URL || "http://localhost:4000";
 
-const envSchema = z.object({
+const envSchema = z
+  .object({
   PORT: z.coerce.number().default(4000),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   DATABASE_URL: z.string().min(1),
@@ -31,7 +32,26 @@ const envSchema = z.object({
   VTU_API_KEY: z.string().optional(),
   VTU_BASE_URL: z.string().optional(),
   ADMIN_EMAIL: z.string().email().default("admin@prosperoushub.com")
-});
+  })
+  .superRefine((env, ctx) => {
+    if (env.VTU_PROVIDER === "REAL") {
+      if (!env.VTU_API_KEY) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["VTU_API_KEY"],
+          message: "VTU_API_KEY is required when VTU_PROVIDER=REAL"
+        });
+      }
+
+      if (!env.VTU_BASE_URL) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["VTU_BASE_URL"],
+          message: "VTU_BASE_URL is required when VTU_PROVIDER=REAL"
+        });
+      }
+    }
+  });
 
 const parsed = envSchema.safeParse(process.env);
 

@@ -28,6 +28,10 @@ services:
       - key: PAYMENT_CALLBACK_PROVIDER
         value: AUTO
       - key: VTU_PROVIDER
-        value: SIMULATED
+        value: REAL
+      - key: VTU_API_KEY
+        sync: false
+      - key: VTU_BASE_URL
+        sync: false
       - key: ADMIN_EMAIL
         sync: false
