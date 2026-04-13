@@ -68,8 +68,8 @@ export default function AppShell({ children }) {
         </nav>
       </header>
       <div className="flex flex-col gap-6 md:flex-row">
-        <main className="flex-1">{children}</main>
         <CustomerSidebar />
+        <main className="flex-1">{children}</main>
       </div>
     </div>
   );
