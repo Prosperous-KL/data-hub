@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { clearSession, getUser } from "../lib/auth";
+import CustomerSidebar from "./CustomerSidebar";
 
 const links = [
   { href: "/dashboard", label: "Dashboard" },
@@ -24,7 +25,7 @@ export default function AppShell({ children }) {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+    <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
       <header className="panel mb-6 animate-floatUp px-5 py-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
@@ -66,7 +67,10 @@ export default function AppShell({ children }) {
             ))}
         </nav>
       </header>
-      <main className="flex-1">{children}</main>
+      <div className="flex flex-col gap-6 md:flex-row">
+        <main className="flex-1">{children}</main>
+        <CustomerSidebar />
+      </div>
     </div>
   );
 }

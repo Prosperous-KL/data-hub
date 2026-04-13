@@ -141,6 +141,32 @@ function logMemoryFallbackOnce(error) {
   });
 }
 
+function deliverOtp({ code, channel, target, purpose }) {
+  if (channel === "EMAIL") {
+    console.log(`
+╔════════════════════════════════════════════════════════╗
+║            📧 EMAIL OTP DELIVERY (MOCK)              ║
+╠════════════════════════════════════════════════════════╣
+║ Recipient: ${target.padEnd(50)} ║
+║ Purpose:   ${purpose.padEnd(50)} ║
+║ Code:      ${code.padEnd(50)} ║
+║ Valid for: 10 minutes                                 ║
+╚════════════════════════════════════════════════════════╝
+    `);
+  } else if (channel === "PHONE") {
+    console.log(`
+╔════════════════════════════════════════════════════════╗
+║           📱 SMS OTP DELIVERY (MOCK)                 ║
+╠════════════════════════════════════════════════════════╣
+║ Recipient: ${target.padEnd(50)} ║
+║ Purpose:   ${purpose.padEnd(50)} ║
+║ Code:      ${code.padEnd(50)} ║
+║ Valid for: 10 minutes                                 ║
+╚════════════════════════════════════════════════════════╝
+    `);
+  }
+}
+
 async function registerInMemory({ fullName, email, phone, password }) {
   const normalizedEmail = normalizeEmail(email);
   const existing = memoryUsers.find((item) => item.email === normalizedEmail);
@@ -366,6 +392,14 @@ async function requestOtp({ purpose, channel, target }) {
 
   const otp = await createOtpRecord({ purpose, channel, target: normalizedTarget });
 
+  // Simulate OTP delivery
+  deliverOtp({
+    code: otp.code,
+    channel,
+    target: normalizedTarget,
+    purpose
+  });
+
   console.log("[auth.service] OTP generated", {
     purpose,
     channel,
@@ -377,7 +411,8 @@ async function requestOtp({ purpose, channel, target }) {
     expiresInSeconds: otp.expiresInSeconds,
     channel,
     target: maskTarget(channel, normalizedTarget),
-    message: "OTP sent successfully"
+    deliveryMethod: channel === "EMAIL" ? "Email" : "SMS",
+    message: `OTP sent to ${channel === "EMAIL" ? "email" : "phone number"}`
   };
 
   if (env.NODE_ENV !== "production") {
