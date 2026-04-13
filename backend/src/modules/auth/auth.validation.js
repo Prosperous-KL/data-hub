@@ -50,11 +50,18 @@ const deleteAccountSchema = z.object({
   })
 });
 
+const updateUsernameSchema = z.object({
+  body: z.object({
+    fullName: z.string().min(2).max(100)
+  })
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   otpRequestSchema,
   passwordRecoveryRequestSchema,
   passwordResetSchema,
-  deleteAccountSchema
+  deleteAccountSchema,
+  updateUsernameSchema
 };

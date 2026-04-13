@@ -696,11 +696,67 @@ async function deleteAccount({ userId, password }) {
   }
 }
 
+async function updateUsername({ userId, fullName }) {
+  const normalizedName = fullName.trim();
+
+  if (!normalizedName || normalizedName.length < 2) {
+    throw new ApiError(400, "Username must be at least 2 characters", "INVALID_USERNAME");
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE users
+       SET full_name = $1, updated_at = NOW()
+       WHERE id = $2
+       RETURNING id, full_name, email, phone, role, created_at`,
+      [normalizedName, userId]
+    );
+
+    if (result.rows.length === 0) {
+      throw new ApiError(404, "User not found", "USER_NOT_FOUND");
+    }
+
+    return {
+      user: result.rows[0],
+      message: "Username updated successfully"
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    if (shouldUseMemoryFallback(error)) {
+      logMemoryFallbackOnce(error);
+      const user = memoryUsers.find((item) => item.id === userId);
+
+      if (!user) {
+        throw new ApiError(404, "User not found", "USER_NOT_FOUND");
+      }
+
+      user.full_name = normalizedName;
+      return {
+        user: {
+          id: user.id,
+          full_name: user.full_name,
+          email: user.email,
+          phone: user.phone,
+          role: user.role,
+          created_at: user.created_at
+        },
+        message: "Username updated successfully"
+      };
+    }
+
+    throw error;
+  }
+}
+
 module.exports = {
   register,
   login,
   requestOtp,
   requestPasswordRecoveryOtp,
   resetPasswordWithOtp,
-  deleteAccount
+  deleteAccount,
+  updateUsername
 };

@@ -7,7 +7,8 @@ const {
   otpRequestSchema,
   passwordRecoveryRequestSchema,
   passwordResetSchema,
-  deleteAccountSchema
+  deleteAccountSchema,
+  updateUsernameSchema
 } = require("./auth.validation");
 const authService = require("./auth.service");
 
@@ -93,6 +94,18 @@ router.delete("/account", authRequired, validate(deleteAccountSchema), async (re
     const result = await authService.deleteAccount({
       userId: req.user.sub,
       password: req.validated.body.password
+    });
+    return res.json({ success: true, ...result });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.put("/username", authRequired, validate(updateUsernameSchema), async (req, res, next) => {
+  try {
+    const result = await authService.updateUsername({
+      userId: req.user.sub,
+      fullName: req.validated.body.fullName
     });
     return res.json({ success: true, ...result });
   } catch (error) {
