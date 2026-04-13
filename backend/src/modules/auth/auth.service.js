@@ -495,6 +495,11 @@ async function register({ fullName, email, phone, password, otpSessionId, otpCod
       throw new ApiError(409, "Email already registered", "EMAIL_EXISTS");
     }
 
+    const existingPhone = await pool.query("SELECT id FROM users WHERE phone = $1", [resolvedPhone]);
+    if (existingPhone.rows.length > 0) {
+      throw new ApiError(409, "Phone number already registered", "PHONE_EXISTS");
+    }
+
     const hash = await bcrypt.hash(password, 12);
     const role = normalizedEmail === env.ADMIN_EMAIL.toLowerCase() ? "admin" : "user";
 
@@ -633,10 +638,69 @@ async function login({ email, password }) {
   }
 }
 
+async function deleteAccount({ userId, password }) {
+  try {
+    const userResult = await pool.query(
+      `SELECT id, password_hash, email, full_name
+       FROM users
+       WHERE id = $1`,
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      throw new ApiError(404, "Account not found", "ACCOUNT_NOT_FOUND");
+    }
+
+    const user = userResult.rows[0];
+    const matches = await bcrypt.compare(password, user.password_hash);
+
+    if (!matches) {
+      throw new ApiError(401, "Invalid password", "INVALID_PASSWORD");
+    }
+
+    await withTransaction(async (client) => {
+      await client.query(`DELETE FROM otp_codes WHERE target = $1`, [user.email]);
+      await client.query(`DELETE FROM transactions WHERE user_id = $1`, [userId]);
+      await client.query(`DELETE FROM wallets WHERE user_id = $1`, [userId]);
+      await client.query(`DELETE FROM users WHERE id = $1`, [userId]);
+    });
+
+    return { message: "Account deleted successfully" };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    if (shouldUseMemoryFallback(error)) {
+      logMemoryFallbackOnce(error);
+      const user = memoryUsers.find((item) => item.id === userId);
+
+      if (!user) {
+        throw new ApiError(404, "Account not found", "ACCOUNT_NOT_FOUND");
+      }
+
+      const matches = await bcrypt.compare(password, user.password_hash);
+      if (!matches) {
+        throw new ApiError(401, "Invalid password", "INVALID_PASSWORD");
+      }
+
+      const index = memoryUsers.findIndex((item) => item.id === userId);
+      if (index !== -1) {
+        memoryUsers.splice(index, 1);
+      }
+
+      return { message: "Account deleted successfully" };
+    }
+
+    throw error;
+  }
+}
+
 module.exports = {
   register,
   login,
   requestOtp,
   requestPasswordRecoveryOtp,
-  resetPasswordWithOtp
+  resetPasswordWithOtp,
+  deleteAccount
 };

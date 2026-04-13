@@ -44,10 +44,17 @@ const passwordResetSchema = z.object({
   })
 });
 
+const deleteAccountSchema = z.object({
+  body: z.object({
+    password: z.string().min(8)
+  })
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   otpRequestSchema,
   passwordRecoveryRequestSchema,
-  passwordResetSchema
+  passwordResetSchema,
+  deleteAccountSchema
 };

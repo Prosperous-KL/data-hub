@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { getUser } from "../lib/auth";
 
 export default function CustomerSidebar() {
@@ -57,6 +58,15 @@ export default function CustomerSidebar() {
                 : "Recently"}
             </p>
           </div>
+        </div>
+
+        <div className="border-t border-slate-200 pt-4 space-y-2">
+          <Link href="/account-recovery" className="block rounded-lg bg-brand-sky text-white px-3 py-2 text-xs font-semibold text-center hover:bg-brand-sky/90 transition">
+            Recovery Account
+          </Link>
+          <Link href="/delete-account" className="block rounded-lg bg-red-600 text-white px-3 py-2 text-xs font-semibold text-center hover:bg-red-700 transition">
+            Delete Account
+          </Link>
         </div>
 
         <div className="border-t border-slate-200 pt-3">

@@ -6,7 +6,8 @@ const {
   loginSchema,
   otpRequestSchema,
   passwordRecoveryRequestSchema,
-  passwordResetSchema
+  passwordResetSchema,
+  deleteAccountSchema
 } = require("./auth.validation");
 const authService = require("./auth.service");
 
@@ -82,6 +83,18 @@ router.post("/login", validate(loginSchema), async (req, res, next) => {
       token,
       user
     });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.delete("/account", authRequired, validate(deleteAccountSchema), async (req, res, next) => {
+  try {
+    const result = await authService.deleteAccount({
+      userId: req.user.sub,
+      password: req.validated.body.password
+    });
+    return res.json({ success: true, ...result });
   } catch (error) {
     return next(error);
   }
