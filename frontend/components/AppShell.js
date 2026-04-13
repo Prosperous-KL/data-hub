@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { clearSession, getUser } from "../lib/auth";
 import CustomerSidebar from "./CustomerSidebar";
 
@@ -18,6 +19,7 @@ export default function AppShell({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const user = getUser();
+  const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
 
   function logout() {
     clearSession();
@@ -46,6 +48,9 @@ export default function AppShell({ children }) {
           </div>
           <div className="text-sm text-slate-700">
             <div>{user?.full_name || user?.email || "User"}</div>
+            <button onClick={() => setMobileProfileOpen(true)} className="mt-1 block text-xs font-semibold text-slate-700 underline md:hidden">
+              Open Profile
+            </button>
             <button onClick={logout} className="text-xs font-semibold text-brand-sky hover:underline">
               Logout
             </button>
@@ -68,9 +73,35 @@ export default function AppShell({ children }) {
         </nav>
       </header>
       <div className="flex flex-col gap-6 md:flex-row">
-        <CustomerSidebar />
+        <div className="hidden md:block">
+          <CustomerSidebar />
+        </div>
         <main className="flex-1">{children}</main>
       </div>
+
+      {mobileProfileOpen && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <button
+            type="button"
+            aria-label="Close profile panel"
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setMobileProfileOpen(false)}
+          />
+          <div className="absolute left-0 top-0 h-full w-[84%] max-w-sm overflow-y-auto bg-white p-3 shadow-2xl">
+            <div className="mb-3 flex items-center justify-between px-1">
+              <h2 className="text-sm font-semibold text-slate-800">Customer Profile</h2>
+              <button
+                type="button"
+                onClick={() => setMobileProfileOpen(false)}
+                className="rounded-md border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700"
+              >
+                Close
+              </button>
+            </div>
+            <CustomerSidebar />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
