@@ -1,11 +1,15 @@
 const { z } = require("zod");
 
+const otpCodeSchema = z.string().regex(/^\d{6}$/, "OTP code must be 6 digits");
+
 const registerSchema = z.object({
   body: z.object({
     fullName: z.string().min(2).optional(),
     email: z.string().email(),
     phone: z.string().min(8).optional(),
-    password: z.string().min(8)
+    password: z.string().min(8),
+    otpSessionId: z.string().uuid(),
+    otpCode: otpCodeSchema
   })
 });
 
@@ -16,7 +20,34 @@ const loginSchema = z.object({
   })
 });
 
+const otpRequestSchema = z.object({
+  body: z.object({
+    purpose: z.enum(["REGISTER", "PASSWORD_RESET"]),
+    channel: z.enum(["EMAIL", "PHONE"]),
+    target: z.string().min(4)
+  })
+});
+
+const passwordRecoveryRequestSchema = z.object({
+  body: z.object({
+    identifier: z.string().min(4),
+    channel: z.enum(["EMAIL", "PHONE"]).optional()
+  })
+});
+
+const passwordResetSchema = z.object({
+  body: z.object({
+    identifier: z.string().min(4),
+    otpSessionId: z.string().uuid(),
+    otpCode: otpCodeSchema,
+    newPassword: z.string().min(8)
+  })
+});
+
 module.exports = {
   registerSchema,
-  loginSchema
+  loginSchema,
+  otpRequestSchema,
+  passwordRecoveryRequestSchema,
+  passwordResetSchema
 };

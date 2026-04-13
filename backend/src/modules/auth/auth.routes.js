@@ -1,7 +1,13 @@
 const express = require("express");
 const validate = require("../../middleware/validate");
 const { authRequired } = require("../../middleware/auth");
-const { registerSchema, loginSchema } = require("./auth.validation");
+const {
+  registerSchema,
+  loginSchema,
+  otpRequestSchema,
+  passwordRecoveryRequestSchema,
+  passwordResetSchema
+} = require("./auth.validation");
 const authService = require("./auth.service");
 
 const router = express.Router();
@@ -34,6 +40,33 @@ router.post("/register", validate(registerSchema), async (req, res, next) => {
   try {
     const result = await authService.register(req.validated.body);
     return res.status(201).json({ success: true, ...result });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post("/otp/request", validate(otpRequestSchema), async (req, res, next) => {
+  try {
+    const result = await authService.requestOtp(req.validated.body);
+    return res.status(201).json({ success: true, ...result });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post("/password-recovery/request", validate(passwordRecoveryRequestSchema), async (req, res, next) => {
+  try {
+    const result = await authService.requestPasswordRecoveryOtp(req.validated.body);
+    return res.status(201).json({ success: true, ...result });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post("/password-recovery/reset", validate(passwordResetSchema), async (req, res, next) => {
+  try {
+    const result = await authService.resetPasswordWithOtp(req.validated.body);
+    return res.json({ success: true, ...result });
   } catch (error) {
     return next(error);
   }
