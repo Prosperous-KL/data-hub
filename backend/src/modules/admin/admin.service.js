@@ -3,41 +3,83 @@ const pool = require("../../db/pool");
 const ApiError = require("../../utils/apiError");
 const walletService = require("../wallet/wallet.service");
 
-async function listUsers(limit = 100) {
-  const result = await pool.query(
-    `SELECT id, full_name, email, phone, role, created_at
-     FROM users
-     ORDER BY created_at DESC
-     LIMIT $1`,
-    [limit]
-  );
+function shouldUseMemoryFallback(error) {
+  if (!error || error instanceof ApiError) {
+    return false;
+  }
 
-  return result.rows;
+  const code = String(error.code || "").toUpperCase();
+  const message = String(error.message || "").toLowerCase();
+
+  return (
+    code === "ECONNREFUSED" ||
+    code === "ENOTFOUND" ||
+    code === "ETIMEDOUT" ||
+    message.includes("connect") ||
+    message.includes("database") ||
+    message.includes("timeout")
+  );
+}
+
+async function listUsers(limit = 100) {
+  try {
+    const result = await pool.query(
+      `SELECT id, full_name, email, phone, role, created_at
+       FROM users
+       ORDER BY created_at DESC
+       LIMIT $1`,
+      [limit]
+    );
+
+    return result.rows;
+  } catch (error) {
+    if (shouldUseMemoryFallback(error)) {
+      return [];
+    }
+
+    throw error;
+  }
 }
 
 async function listTransactions(limit = 200) {
-  const result = await pool.query(
-    `SELECT id, user_id, type, amount, status, reference, narration, category, metadata, created_at
-     FROM transactions
-     ORDER BY created_at DESC
-     LIMIT $1`,
-    [limit]
-  );
+  try {
+    const result = await pool.query(
+      `SELECT id, user_id, type, amount, status, reference, narration, category, metadata, created_at
+       FROM transactions
+       ORDER BY created_at DESC
+       LIMIT $1`,
+      [limit]
+    );
 
-  return result.rows;
+    return result.rows;
+  } catch (error) {
+    if (shouldUseMemoryFallback(error)) {
+      return [];
+    }
+
+    throw error;
+  }
 }
 
 async function listFailedTransactions(limit = 200) {
-  const result = await pool.query(
-    `SELECT id, user_id, type, amount, status, reference, narration, category, metadata, created_at
-     FROM transactions
-     WHERE status = 'failed' OR category = 'refund'
-     ORDER BY created_at DESC
-     LIMIT $1`,
-    [limit]
-  );
+  try {
+    const result = await pool.query(
+      `SELECT id, user_id, type, amount, status, reference, narration, category, metadata, created_at
+       FROM transactions
+       WHERE status = 'failed' OR category = 'refund'
+       ORDER BY created_at DESC
+       LIMIT $1`,
+      [limit]
+    );
 
-  return result.rows;
+    return result.rows;
+  } catch (error) {
+    if (shouldUseMemoryFallback(error)) {
+      return [];
+    }
+
+    throw error;
+  }
 }
 
 async function manualRefund({ transactionId, reason, adminUserId }) {
