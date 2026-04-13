@@ -80,7 +80,7 @@ export default function BuyDataPage() {
       <AppShell>
         <section className="panel max-w-2xl animate-floatUp p-5">
           <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>Buy Data Bundle</h2>
-          <p className="mt-1 text-sm text-slate-600">Choose network, recipient number, and the MoMo number that will pay for the bundle.</p>
+          <p className="mt-1 text-sm text-slate-600">Choose network, recipient number, and the payment number that will approve the transaction.</p>
 
           <ErrorAlert message={error} />
           {bootLoading && <LoadingState label="Loading bundles" />}
@@ -109,23 +109,33 @@ export default function BuyDataPage() {
                 ))}
               </select>
 
-              <input
-                className="input"
-                type="text"
-                placeholder="Recipient phone number"
-                value={form.phoneNumber}
-                onChange={(event) => setForm({ ...form, phoneNumber: event.target.value })}
-                required
-              />
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Recipient number
+                </label>
+                <input
+                  className="input"
+                  type="text"
+                  placeholder="Recipient phone number"
+                  value={form.phoneNumber}
+                  onChange={(event) => setForm({ ...form, phoneNumber: event.target.value })}
+                  required
+                />
+              </div>
 
-              <input
-                className="input"
-                type="text"
-                placeholder="MoMo number to pay from"
-                value={form.momoNumber}
-                onChange={(event) => setForm({ ...form, momoNumber: event.target.value })}
-                required
-              />
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Payment number
+                </label>
+                <input
+                  className="input"
+                  type="text"
+                  placeholder="MoMo number to pay from"
+                  value={form.momoNumber}
+                  onChange={(event) => setForm({ ...form, momoNumber: event.target.value })}
+                  required
+                />
+              </div>
 
               <button type="submit" disabled={loading} className="btn-primary w-full">
                 {loading ? "Processing..." : "Buy Data"}
