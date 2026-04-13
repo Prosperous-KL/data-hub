@@ -2,7 +2,7 @@ const { test, expect } = require("@playwright/test");
 
 test("login page renders form and CTA", async ({ page }) => {
   await page.goto("/login");
-  await expect(page.getByRole("heading", { name: "Welcome Back" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Welcome," })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign In" })).toBeVisible();
   await expect(page.getByText("Need an account?")).toBeVisible();
 });

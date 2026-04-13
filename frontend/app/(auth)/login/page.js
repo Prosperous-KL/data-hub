@@ -52,7 +52,7 @@ export default function LoginPage() {
                 Prosperous Data Hub
               </p>
               <h2 className="mt-6 max-w-sm text-4xl font-black leading-tight" style={{ fontFamily: "var(--font-heading)" }}>
-                Fast VTU, secure wallet, effortless top-ups.
+                Fast VTU, secure wallet, effortless top-ups and Reliable
               </h2>
               <p className="mt-4 max-w-sm text-sm text-slate-200">
                 Manage your airtime and data purchases in one dashboard with real-time transaction tracking.
@@ -69,7 +69,7 @@ export default function LoginPage() {
         <section className="p-6 sm:p-8 md:p-10">
           <form onSubmit={onSubmit} className="mx-auto w-full max-w-md animate-floatUp">
             <h1 className="text-3xl font-black text-slate-900" style={{ fontFamily: "var(--font-heading)" }}>
-              Welcome Back
+              Welcome,
             </h1>
             <div className="mt-3">
               <Image
