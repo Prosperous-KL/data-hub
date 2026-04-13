@@ -94,6 +94,76 @@ function buildOtpCode() {
   return `P${String(randomInt(0, 1000000)).padStart(6, "0")}`;
 }
 
+async function generateUniqueUsername(baseUsername, excludeUserId = null) {
+  const base = String(baseUsername || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]/g, "")
+    .substring(0, 40)
+    .replace(/^[^a-z0-9]/, "")
+    .replace(/[^a-z0-9]$/, "");
+
+  if (!base || base.length < 3) {
+    // Generate from random if base is invalid
+    const randomNum = randomInt(1000000, 9999999);
+    return `user${randomNum}`;
+  }
+
+  // Try the base username first
+  let query = "SELECT id FROM users WHERE LOWER(username) = $1";
+  let params = [base];
+  if (excludeUserId) {
+    query += " AND id != $2";
+    params.push(excludeUserId);
+  }
+
+  try {
+    const result = await pool.query(query, params);
+    if (result.rows.length === 0) {
+      return base;
+    }
+  } catch (error) {
+    if (shouldUseMemoryFallback(error)) {
+      const exists = memoryUsers.some(
+        (user) => String(user.username || "").toLowerCase() === base && user.id !== excludeUserId
+      );
+      if (!exists) {
+        return base;
+      }
+    }
+  }
+
+  // Add random suffix if base is taken
+  for (let i = 0; i < 10; i++) {
+    const suffix = randomInt(100, 999);
+    const candidate = `${base}${suffix}`;
+    let query = "SELECT id FROM users WHERE LOWER(username) = $1";
+    let params = [candidate];
+    if (excludeUserId) {
+      query += " AND id != $2";
+      params.push(excludeUserId);
+    }
+
+    try {
+      const result = await pool.query(query, params);
+      if (result.rows.length === 0) {
+        return candidate;
+      }
+    } catch (error) {
+      if (shouldUseMemoryFallback(error)) {
+        const exists = memoryUsers.some(
+          (user) => String(user.username || "").toLowerCase() === candidate && user.id !== excludeUserId
+        );
+        if (!exists) {
+          return candidate;
+        }
+      }
+    }
+  }
+
+  // If still not found, use timestamp-based
+  return `${base}${Date.now()}`.substring(0, 50);
+}
+
 function buildOtpDigest({ code, target, purpose }) {
   return createHash("sha256")
     .update(`${code}:${target}:${purpose}:${env.JWT_SECRET}`)
@@ -173,10 +243,12 @@ async function registerInMemory({ fullName, email, phone, password }) {
   const hash = await bcrypt.hash(password, 12);
   const role = normalizedEmail === env.ADMIN_EMAIL.toLowerCase() ? "admin" : "user";
   const createdAt = new Date().toISOString();
+  const username = await generateUniqueUsername(buildDefaultFullName(normalizedEmail, fullName));
 
   const user = {
     id: randomUUID(),
     full_name: buildDefaultFullName(normalizedEmail, fullName),
+    username,
     email: normalizedEmail,
     phone: buildDefaultPhone(phone),
     password_hash: hash,
@@ -190,6 +262,7 @@ async function registerInMemory({ fullName, email, phone, password }) {
     user: {
       id: user.id,
       full_name: user.full_name,
+      username: user.username,
       email: user.email,
       phone: user.phone,
       role: user.role,
@@ -470,6 +543,7 @@ async function loginInMemory({ email, password }) {
     user: {
       id: user.id,
       full_name: user.full_name,
+      username: user.username,
       email: user.email,
       phone: user.phone,
       role: user.role,
@@ -504,13 +578,14 @@ async function register({ fullName, email, phone, password, otpSessionId, otpCod
 
     const hash = await bcrypt.hash(password, 12);
     const role = normalizedEmail === env.ADMIN_EMAIL.toLowerCase() ? "admin" : "user";
+    const generatedUsername = await generateUniqueUsername(resolvedFullName);
 
     const result = await withTransaction(async (client) => {
       const userInsert = await client.query(
-        `INSERT INTO users (full_name, email, phone, password_hash, role)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, full_name, email, phone, role, created_at`,
-        [resolvedFullName, normalizedEmail, resolvedPhone, hash, role]
+        `INSERT INTO users (full_name, username, email, phone, password_hash, role)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING id, full_name, username, email, phone, role, created_at`,
+        [resolvedFullName, generatedUsername, normalizedEmail, resolvedPhone, hash, role]
       );
 
       const user = userInsert.rows[0];
@@ -602,7 +677,7 @@ async function login({ email, password }) {
 
   try {
     const result = await pool.query(
-      `SELECT id, full_name, email, phone, password_hash, role, created_at
+      `SELECT id, full_name, username, email, phone, password_hash, role, created_at
        FROM users
        WHERE email = $1`,
       [normalizedEmail]
@@ -623,6 +698,7 @@ async function login({ email, password }) {
       user: {
         id: user.id,
         full_name: user.full_name,
+        username: user.username,
         email: user.email,
         phone: user.phone,
         role: user.role,
@@ -724,20 +800,90 @@ async function deleteAccount({ userId, password, otpSessionId, otpCode, channel 
   }
 }
 
-async function updateUsername({ userId, fullName }) {
-  const normalizedName = fullName.trim();
+async function checkUsernameAvailability(username, excludeUserId = null) {
+  const normalizedUsername = String(username || "").toLowerCase().trim();
 
+  if (!normalizedUsername || normalizedUsername.length < 3) {
+    throw new ApiError(400, "Username must be at least 3 characters", "INVALID_USERNAME_LENGTH");
+  }
+
+  if (!/^[a-z0-9._-]{3,50}$/.test(normalizedUsername)) {
+    throw new ApiError(
+      400,
+      "Username can only contain lowercase letters, numbers, dots, hyphens, and underscores",
+      "INVALID_USERNAME_FORMAT"
+    );
+  }
+
+  try {
+    let query = "SELECT id FROM users WHERE LOWER(username) = $1";
+    let params = [normalizedUsername];
+
+    if (excludeUserId) {
+      query += " AND id != $2";
+      params.push(excludeUserId);
+    }
+
+    const result = await pool.query(query, params);
+    return result.rows.length === 0; // true if available, false if taken
+  } catch (error) {
+    if (shouldUseMemoryFallback(error)) {
+      logMemoryFallbackOnce(error);
+      const exists = memoryUsers.some(
+        (user) =>
+          String(user.username || "").toLowerCase() === normalizedUsername &&
+          user.id !== excludeUserId
+      );
+      return !exists;
+    }
+
+    throw error;
+  }
+}
+
+async function updateUsername({ userId, username, fullName }) {
+  const normalizedUsername = String(username || "").toLowerCase().trim();
+  const normalizedName = String(fullName || "").trim();
+
+  // Validate display name (full_name)
   if (!normalizedName || normalizedName.length < 2) {
-    throw new ApiError(400, "Username must be at least 2 characters", "INVALID_USERNAME");
+    throw new ApiError(400, "Display name must be at least 2 characters", "INVALID_DISPLAY_NAME");
+  }
+
+  if (normalizedName.length > 120) {
+    throw new ApiError(400, "Display name must not exceed 120 characters", "DISPLAY_NAME_TOO_LONG");
+  }
+
+  // Validate unique username handle
+  if (!normalizedUsername || normalizedUsername.length < 3) {
+    throw new ApiError(400, "Username must be at least 3 characters", "INVALID_USERNAME_LENGTH");
+  }
+
+  if (normalizedUsername.length > 50) {
+    throw new ApiError(400, "Username must not exceed 50 characters", "USERNAME_TOO_LONG");
+  }
+
+  if (!/^[a-z0-9._-]{3,50}$/.test(normalizedUsername)) {
+    throw new ApiError(
+      400,
+      "Username can only contain lowercase letters, numbers, dots, hyphens, and underscores",
+      "INVALID_USERNAME_FORMAT"
+    );
+  }
+
+  // Check if username is available for this user (must not be taken by anyone else)
+  const isAvailable = await checkUsernameAvailability(normalizedUsername, userId);
+  if (!isAvailable) {
+    throw new ApiError(409, "Username is already taken", "USERNAME_TAKEN");
   }
 
   try {
     const result = await pool.query(
       `UPDATE users
-       SET full_name = $1, updated_at = NOW()
-       WHERE id = $2
-       RETURNING id, full_name, email, phone, role, created_at`,
-      [normalizedName, userId]
+       SET full_name = $1, username = $2, updated_at = NOW()
+       WHERE id = $3
+       RETURNING id, full_name, username, email, phone, role, created_at`,
+      [normalizedName, normalizedUsername, userId]
     );
 
     if (result.rows.length === 0) {
@@ -762,10 +908,12 @@ async function updateUsername({ userId, fullName }) {
       }
 
       user.full_name = normalizedName;
+      user.username = normalizedUsername;
       return {
         user: {
           id: user.id,
           full_name: user.full_name,
+          username: user.username,
           email: user.email,
           phone: user.phone,
           role: user.role,
@@ -786,6 +934,7 @@ module.exports = {
   requestPasswordRecoveryOtp,
   resetPasswordWithOtp,
   deleteAccount,
+  checkUsernameAvailability,
   updateUsername,
   getRegisteredUsersInMemory: () =>
     memoryUsers.map((user) => ({
@@ -793,6 +942,7 @@ module.exports = {
       full_name: user.full_name,
       email: user.email,
       phone: user.phone,
+      username: user.username,
       role: user.role,
       created_at: user.created_at
     }))

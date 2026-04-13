@@ -74,6 +74,25 @@ npm run dev
 
 Update `backend/.env` with your DB URL and secrets.
 
+### Configure Hubtel SMS (Optional but Recommended)
+
+For OTP delivery via SMS during registration/auth:
+
+```bash
+# Edit backend/.env and add:
+HUBTEL_SMS_CLIENT_ID=your_client_id
+HUBTEL_SMS_CLIENT_SECRET=your_client_secret
+HUBTEL_SMS_FROM=YourBrand
+```
+
+**[📖 Full SMS Setup Guide](docs/HUBTEL_SMS_SETUP.md)** | **[⚡ Quick Start](docs/SMS_QUICK_START.md)**
+
+Then verify configuration:
+
+```bash
+node backend/scripts/verify-hubtel-config.js
+```
+
 ## 3) Frontend
 
 ```bash

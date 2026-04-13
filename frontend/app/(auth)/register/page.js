@@ -16,6 +16,11 @@ function isValidGhanaPhone(value) {
   return ghPhoneRegex.test(normalized);
 }
 
+function isSmsDeliveryNotConfigured(error) {
+  const message = String(error?.message || "").toLowerCase();
+  return error?.code === "SMS_DELIVERY_NOT_CONFIGURED" || message.includes("hubtel sms is not configured");
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "" });
@@ -61,6 +66,35 @@ export default function RegisterPage() {
       setDevOtp(response.devOtp || "");
       setMessage(response.message || `Prosperous Data Hub Confirmation sent via ${response.deliveryMethod || "delivery"}.`);
     } catch (requestError) {
+      if (verificationChannel === "PHONE" && isSmsDeliveryNotConfigured(requestError)) {
+        if (form.email) {
+          try {
+            const fallbackResponse = await apiRequest("/api/auth/otp/request", {
+              method: "POST",
+              body: {
+                purpose: "REGISTER",
+                channel: "EMAIL",
+                target: form.email
+              }
+            });
+
+            setVerificationChannel("EMAIL");
+            setOtpSessionId(fallbackResponse.otpSessionId || "");
+            setDevOtp(fallbackResponse.devOtp || "");
+            setMessage(
+              `${fallbackResponse.message || "Prosperous Data Hub Confirmation sent via Gmail."} SMS channel is unavailable, so email verification was used.`
+            );
+            return;
+          } catch (fallbackError) {
+            setError(fallbackError.message);
+            return;
+          }
+        }
+
+        setError("SMS OTP is unavailable right now. Add an email and choose Email verification, or configure Hubtel SMS on the backend.");
+        return;
+      }
+
       setError(requestError.message);
     } finally {
       setSendingOtp(false);

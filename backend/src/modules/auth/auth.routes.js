@@ -8,7 +8,8 @@ const {
   passwordRecoveryRequestSchema,
   passwordResetSchema,
   deleteAccountSchema,
-  updateUsernameSchema
+  updateUsernameSchema,
+  checkUsernameAvailabilitySchema
 } = require("./auth.validation");
 const authService = require("./auth.service");
 
@@ -108,9 +109,24 @@ router.put("/username", authRequired, validate(updateUsernameSchema), async (req
   try {
     const result = await authService.updateUsername({
       userId: req.user.sub,
+      username: req.validated.body.username,
       fullName: req.validated.body.fullName
     });
     return res.json({ success: true, ...result });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get("/username/check", validate(checkUsernameAvailabilitySchema), async (req, res, next) => {
+  try {
+    const username = req.validated.query.username;
+    const isAvailable = await authService.checkUsernameAvailability(username);
+    return res.json({
+      success: true,
+      username,
+      available: isAvailable
+    });
   } catch (error) {
     return next(error);
   }

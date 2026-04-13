@@ -48,7 +48,13 @@ function isSerializableBody(body) {
 export async function apiRequest(path, options = {}) {
   const headers = new Headers(options.headers || {});
   const method = (options.method || "GET").toUpperCase();
-  const requestUrl = `${API_URL}${path}`;
+  
+  // Build the URL with query parameters if provided
+  let requestUrl = `${API_URL}${path}`;
+  if (options.query && typeof options.query === "object") {
+    const queryParams = new URLSearchParams(options.query).toString();
+    requestUrl += `?${queryParams}`;
+  }
 
   if (!headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");

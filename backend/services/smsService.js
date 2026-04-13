@@ -11,15 +11,61 @@ function createHttpError(statusCode, code, message, details) {
 }
 
 function normalizePhoneNumber(phoneNumber) {
-  const digits = String(phoneNumber || "").replace(/\s+/g, "");
-  if (!/^233\d{9}$/.test(digits)) {
+  // Remove whitespace and common separators
+  const normalized = String(phoneNumber || "")
+    .replace(/[\s-().]/g, "")
+    .trim();
+
+  if (!normalized) {
     throw createHttpError(
       400,
       "INVALID_PHONE_NUMBER",
-      "phoneNumber must be in Ghana format: 233XXXXXXXXX"
+      "Phone number is required"
     );
   }
-  return digits;
+
+  // Already international format with +
+  if (normalized.startsWith("+")) {
+    const withoutPlus = normalized.slice(1);
+    if (!/^\d{12,13}$/.test(withoutPlus)) {
+      throw createHttpError(
+        400,
+        "INVALID_PHONE_NUMBER",
+        "Phone number must be valid international format (+233...)"
+      );
+    }
+    return withoutPlus; // Return without + for Hubtel API
+  }
+
+  // 233 prefix (Ghana country code without +)
+  if (normalized.startsWith("233")) {
+    if (!/^233\d{9}$/.test(normalized)) {
+      throw createHttpError(
+        400,
+        "INVALID_PHONE_NUMBER",
+        "Ghana phone number must be 10 digits after 233 prefix"
+      );
+    }
+    return normalized;
+  }
+
+  // 0 prefix (local Ghana format)
+  if (normalized.startsWith("0")) {
+    if (!/^0\d{9}$/.test(normalized)) {
+      throw createHttpError(
+        400,
+        "INVALID_PHONE_NUMBER",
+        "Ghana phone number must be 10 digits starting with 0"
+      );
+    }
+    return `233${normalized.slice(1)}`;
+  }
+
+  throw createHttpError(
+    400,
+    "INVALID_PHONE_NUMBER",
+    "Phone number must be Ghana format: +233..., 233..., or 0..."
+  );
 }
 
 function getHubtelConfig() {

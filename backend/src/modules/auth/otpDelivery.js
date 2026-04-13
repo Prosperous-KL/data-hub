@@ -47,21 +47,58 @@ function getGmailTransporter() {
 }
 
 function normalizeHubtelPhoneNumber(phoneNumber) {
-  const normalized = String(phoneNumber || "").replace(/[^\d+]/g, "");
+  // Remove all non-digit and non-plus characters
+  const normalized = String(phoneNumber || "")
+    .replace(/[\s-().]/g, "")
+    .trim();
 
+  if (!normalized) {
+    throw new ApiError(400, "Phone number is required", "INVALID_SMS_TARGET");
+  }
+
+  // Already international format with +
   if (normalized.startsWith("+")) {
+    const withoutPlus = normalized.slice(1);
+    if (!/^\d{12,13}$/.test(withoutPlus)) {
+      throw new ApiError(
+        400,
+        "Phone number must be valid international format",
+        "INVALID_SMS_TARGET"
+      );
+    }
     return normalized;
   }
 
+  // 233 prefix (Ghana country code without +)
   if (normalized.startsWith("233")) {
+    if (!/^233\d{9}$/.test(normalized)) {
+      throw new ApiError(
+        400,
+        "Ghana phone number must be 10 digits after 233",
+        "INVALID_SMS_TARGET"
+      );
+    }
     return `+${normalized}`;
   }
 
+  // 0 prefix (local Ghana format)
   if (normalized.startsWith("0")) {
+    if (!/^0\d{9}$/.test(normalized)) {
+      throw new ApiError(
+        400,
+        "Ghana phone number must be 10 digits starting with 0",
+        "INVALID_SMS_TARGET"
+      );
+    }
     return `+233${normalized.slice(1)}`;
   }
 
-  throw new ApiError(400, "Phone number must be a valid Ghana number", "INVALID_SMS_TARGET");
+  // No recognized prefix
+  throw new ApiError(
+    400,
+    "Phone number must be Ghana format: +233..., 233..., or 0...",
+    "INVALID_SMS_TARGET"
+  );
 }
 
 async function sendGmailOtp({ code, target, purpose }) {
@@ -88,19 +125,67 @@ async function sendHubtelSmsOtp({ code, target, purpose }) {
   const to = normalizeHubtelPhoneNumber(target);
   const content = buildConfirmationText(code, purpose);
 
-  await axios.get(env.HUBTEL_SMS_BASE_URL, {
-    params: {
-      clientsecret: env.HUBTEL_SMS_CLIENT_SECRET,
-      clientid: env.HUBTEL_SMS_CLIENT_ID,
-      from: env.HUBTEL_SMS_FROM,
-      to,
-      content
-    }
-  });
+  try {
+    // Hubtel API supports both GET and POST - using GET for simplicity
+    // For production, consider POST: https://smsc.hubtel.com/v1/messages/send
+    const response = await axios.get(env.HUBTEL_SMS_BASE_URL, {
+      params: {
+        clientsecret: env.HUBTEL_SMS_CLIENT_SECRET,
+        clientid: env.HUBTEL_SMS_CLIENT_ID,
+        from: env.HUBTEL_SMS_FROM,
+        to,
+        content
+      },
+      timeout: 15000,
+      validateStatus: () => true
+    });
 
-  return {
-    deliveryMethod: "SMS"
-  };
+    const data = response.data || {};
+    const isSuccess = response.status >= 200 && response.status < 300;
+
+    if (!isSuccess) {
+      console.error("[otpDelivery] Hubtel SMS failed", {
+        status: response.status,
+        to,
+        response: data
+      });
+
+      throw new ApiError(
+        502,
+        data.message || data.error || "Failed to send SMS",
+        "SMS_DELIVERY_FAILED",
+        data
+      );
+    }
+
+    console.log("[otpDelivery] Hubtel SMS sent successfully", {
+      to,
+      messageId: data.MessageId || data.response_code
+    });
+
+    return {
+      deliveryMethod: "SMS",
+      provider: "Hubtel",
+      messageId: data.MessageId || data.response_code
+    };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    console.error("[otpDelivery] Hubtel SMS error", {
+      message: error.message,
+      to,
+      code: error.code
+    });
+
+    throw new ApiError(
+      502,
+      "Failed to send SMS via Hubtel",
+      "SMS_PROVIDER_ERROR",
+      { originalError: error.message }
+    );
+  }
 }
 
 async function sendAuthOtp({ code, channel, target, purpose }) {

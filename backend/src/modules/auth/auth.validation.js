@@ -72,7 +72,21 @@ const deleteAccountSchema = z.object({
 
 const updateUsernameSchema = z.object({
   body: z.object({
-    fullName: z.string().min(2).max(100)
+    username: z.string()
+      .min(3, "Username must be at least 3 characters")
+      .max(50, "Username must not exceed 50 characters")
+      .regex(/^[a-z0-9._-]+$/, "Username can only contain lowercase letters, numbers, dots, hyphens, and underscores"),
+    fullName: z.string()
+      .min(2, "Display name must be at least 2 characters")
+      .max(120, "Display name must not exceed 120 characters")
+  })
+});
+
+const checkUsernameAvailabilitySchema = z.object({
+  query: z.object({
+    username: z.string()
+      .min(3, "Username must be at least 3 characters")
+      .max(50, "Username must not exceed 50 characters")
   })
 });
 
@@ -83,5 +97,6 @@ module.exports = {
   passwordRecoveryRequestSchema,
   passwordResetSchema,
   deleteAccountSchema,
-  updateUsernameSchema
+  updateUsernameSchema,
+  checkUsernameAvailabilitySchema
 };
