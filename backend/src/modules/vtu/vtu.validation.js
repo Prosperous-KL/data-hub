@@ -14,7 +14,8 @@ const buyDataSchema = z.object({
   body: z.object({
     network: z.enum(NETWORKS),
     bundleCode: z.string().min(2),
-    phoneNumber: z.string().refine(isValidGhanaPhone, "Phone number must be a valid Ghana number")
+    phoneNumber: z.string().refine(isValidGhanaPhone, "Recipient number must be a valid Ghana number"),
+    momoNumber: z.string().refine(isValidGhanaPhone, "MoMo number must be a valid Ghana number")
   })
 });
 

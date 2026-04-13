@@ -34,7 +34,7 @@ function getBundle(network, bundleCode) {
   return bundle;
 }
 
-async function buyData({ userId, network, bundleCode, phoneNumber, idempotencyKey }) {
+async function buyData({ userId, network, bundleCode, phoneNumber, momoNumber, idempotencyKey }) {
   const bundle = getBundle(network, bundleCode);
   const reference = `VTU-${uuidv4()}`;
 
@@ -45,7 +45,7 @@ async function buyData({ userId, network, bundleCode, phoneNumber, idempotencyKe
     narration: `Data bundle purchase ${bundle.volume} ${network}`,
     category: "data_purchase",
     idempotencyKey,
-    metadata: { network, bundleCode, phoneNumber }
+    metadata: { network, bundleCode, phoneNumber, momoNumber }
   });
 
   let purchase;
@@ -75,6 +75,7 @@ async function buyData({ userId, network, bundleCode, phoneNumber, idempotencyKe
       volume: bundle.volume,
       amount: bundle.amount,
       phone_number: phoneNumber,
+      momo_number: momoNumber,
       status: "pending",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -126,7 +127,7 @@ async function buyData({ userId, network, bundleCode, phoneNumber, idempotencyKe
     narration: `Refund for failed data purchase ${bundle.volume} ${network}`,
     category: "refund",
     idempotencyKey: `${idempotencyKey}-refund`,
-    metadata: { originalTransactionId: debit.transaction.id, reason: providerResult.message }
+    metadata: { originalTransactionId: debit.transaction.id, reason: providerResult.message, momoNumber }
   });
 
   try {

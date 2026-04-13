@@ -16,7 +16,7 @@ function isValidGhanaPhone(value) {
 
 export default function BuyDataPage() {
   const [bundles, setBundles] = useState({});
-  const [form, setForm] = useState({ network: "MTN", bundleCode: "", phoneNumber: "" });
+  const [form, setForm] = useState({ network: "MTN", bundleCode: "", phoneNumber: "", momoNumber: "" });
   const [loading, setLoading] = useState(false);
   const [bootLoading, setBootLoading] = useState(true);
   const [error, setError] = useState("");
@@ -48,7 +48,13 @@ export default function BuyDataPage() {
     setResult(null);
 
     if (!isValidGhanaPhone(form.phoneNumber)) {
-      setError("Enter a valid Ghana phone number (e.g. 024xxxxxxx or +23324xxxxxxx).");
+      setError("Enter a valid recipient Ghana phone number (e.g. 024xxxxxxx or +23324xxxxxxx).");
+      setLoading(false);
+      return;
+    }
+
+    if (!isValidGhanaPhone(form.momoNumber)) {
+      setError("Enter a valid MoMo number to pay from (e.g. 024xxxxxxx or +23324xxxxxxx).");
       setLoading(false);
       return;
     }
@@ -74,7 +80,7 @@ export default function BuyDataPage() {
       <AppShell>
         <section className="panel max-w-2xl animate-floatUp p-5">
           <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>Buy Data Bundle</h2>
-          <p className="mt-1 text-sm text-slate-600">Choose network and send internet bundle instantly.</p>
+          <p className="mt-1 text-sm text-slate-600">Choose network, recipient number, and the MoMo number that will pay for the bundle.</p>
 
           <ErrorAlert message={error} />
           {bootLoading && <LoadingState label="Loading bundles" />}
@@ -109,6 +115,15 @@ export default function BuyDataPage() {
                 placeholder="Recipient phone number"
                 value={form.phoneNumber}
                 onChange={(event) => setForm({ ...form, phoneNumber: event.target.value })}
+                required
+              />
+
+              <input
+                className="input"
+                type="text"
+                placeholder="MoMo number to pay from"
+                value={form.momoNumber}
+                onChange={(event) => setForm({ ...form, momoNumber: event.target.value })}
                 required
               />
 
