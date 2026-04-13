@@ -7,6 +7,13 @@ import ErrorAlert from "../../components/ErrorAlert";
 import LoadingState from "../../components/LoadingState";
 import { apiRequest } from "../../lib/api";
 
+const ghPhoneRegex = /^(?:\+233|233|0)(?:2[03456789]|5\d)\d{7}$/;
+
+function isValidGhanaPhone(value) {
+  const normalized = String(value || "").replace(/[\s-]/g, "").trim();
+  return ghPhoneRegex.test(normalized);
+}
+
 export default function BuyDataPage() {
   const [bundles, setBundles] = useState({});
   const [form, setForm] = useState({ network: "MTN", bundleCode: "", phoneNumber: "" });
@@ -39,6 +46,12 @@ export default function BuyDataPage() {
     setLoading(true);
     setError("");
     setResult(null);
+
+    if (!isValidGhanaPhone(form.phoneNumber)) {
+      setError("Enter a valid Ghana phone number (e.g. 024xxxxxxx or +23324xxxxxxx).");
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await apiRequest("/api/data/buy", {

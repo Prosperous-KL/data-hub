@@ -8,6 +8,13 @@ import LoadingState from "../../../components/LoadingState";
 import { apiRequest } from "../../../lib/api";
 import { saveSession } from "../../../lib/auth";
 
+const ghPhoneRegex = /^(?:\+233|233|0)(?:2[03456789]|5\d)\d{7}$/;
+
+function isValidGhanaPhone(value) {
+  const normalized = String(value || "").replace(/[\s-]/g, "").trim();
+  return ghPhoneRegex.test(normalized);
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "" });
@@ -29,6 +36,12 @@ export default function RegisterPage() {
     const target = verificationChannel === "EMAIL" ? form.email : form.phone;
     if (!target) {
       setError(`Enter your ${verificationChannel === "EMAIL" ? "email" : "phone number"} first.`);
+      setSendingOtp(false);
+      return;
+    }
+
+    if (verificationChannel === "PHONE" && !isValidGhanaPhone(form.phone)) {
+      setError("Enter a valid Ghana phone number (e.g. 024xxxxxxx or +23324xxxxxxx).");
       setSendingOtp(false);
       return;
     }
@@ -61,6 +74,12 @@ export default function RegisterPage() {
 
     if (!otpSessionId) {
       setError("Request an OTP first.");
+      setLoading(false);
+      return;
+    }
+
+    if (!isValidGhanaPhone(form.phone)) {
+      setError("Enter a valid Ghana phone number before creating account.");
       setLoading(false);
       return;
     }
