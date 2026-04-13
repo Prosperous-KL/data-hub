@@ -11,6 +11,7 @@ import { saveSession } from "../../../lib/auth";
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "" });
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [verificationChannel, setVerificationChannel] = useState("PHONE");
   const [otpSessionId, setOtpSessionId] = useState("");
   const [otpCode, setOtpCode] = useState("");
@@ -64,6 +65,12 @@ export default function RegisterPage() {
       return;
     }
 
+    if (form.password !== confirmPassword) {
+      setError("Password and Confirm Password do not match.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const response = await apiRequest("/api/auth/register", {
         method: "POST",
@@ -98,6 +105,7 @@ export default function RegisterPage() {
           <input className="input" type="email" placeholder="Email (optional)" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
           <input className="input" type="text" placeholder="Phone number" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} required />
           <input className="input" type="password" placeholder="Password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required />
+          <input className="input" type="password" placeholder="Confirm password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
 
           <div className="rounded-xl border border-slate-200 p-3">
             <p className="mb-2 text-xs font-semibold uppercase text-slate-500">OTP verification</p>
