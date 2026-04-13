@@ -113,6 +113,18 @@ Backend `.env` required keys:
     - EXPRESSPAY_SIGNING_SECRET
     - HUBTEL_CALLBACK_SECRET
     - EXPRESSPAY_CALLBACK_SECRET
+    - VTU_API_KEY (required when `VTU_PROVIDER=REAL`)
+    - VTU_BASE_URL (required when `VTU_PROVIDER=REAL`)
+
+### Going Live for Real Data Delivery
+
+For real customer purchases (not simulation):
+
+1. Set `VTU_PROVIDER=REAL` in backend environment.
+2. Set `VTU_BASE_URL` to your VTU aggregator API base URL.
+3. Set `VTU_API_KEY` to your live provider API key/token.
+4. Redeploy backend and run a live sandbox purchase test.
+5. Keep wallet refund checks enabled (already built-in) for failed provider responses.
 
 Frontend `.env.local`:
 - NEXT_PUBLIC_API_URL (set to your deployed backend URL, for example `https://data-hub-6kwj.onrender.com`)
