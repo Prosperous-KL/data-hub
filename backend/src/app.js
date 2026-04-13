@@ -65,7 +65,6 @@ const corsOptions = {
     return callback(corsError);
   },
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "x-idempotency-key", "X-Idempotency-Key"],
   optionsSuccessStatus: 200
 };
 
