@@ -4,9 +4,9 @@ const otpCodeSchema = z.string().regex(/^\d{6}$/, "OTP code must be 6 digits");
 
 const registerSchema = z.object({
   body: z.object({
-    fullName: z.string().min(2).optional(),
-    email: z.string().email(),
-    phone: z.string().min(8).optional(),
+    fullName: z.string().min(2),
+    email: z.union([z.string().email(), z.literal("")]).optional(),
+    phone: z.string().min(8),
     password: z.string().min(8),
     otpSessionId: z.string().uuid(),
     otpCode: otpCodeSchema

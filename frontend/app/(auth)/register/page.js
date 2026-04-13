@@ -11,7 +11,7 @@ import { saveSession } from "../../../lib/auth";
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "" });
-  const [verificationChannel, setVerificationChannel] = useState("EMAIL");
+  const [verificationChannel, setVerificationChannel] = useState("PHONE");
   const [otpSessionId, setOtpSessionId] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [devOtp, setDevOtp] = useState("");
@@ -95,7 +95,7 @@ export default function RegisterPage() {
 
         <div className="mt-4 space-y-3">
           <input className="input" type="text" placeholder="Full name" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} required />
-          <input className="input" type="email" placeholder="Email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required />
+          <input className="input" type="email" placeholder="Email (optional)" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
           <input className="input" type="text" placeholder="Phone number" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} required />
           <input className="input" type="password" placeholder="Password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required />
 

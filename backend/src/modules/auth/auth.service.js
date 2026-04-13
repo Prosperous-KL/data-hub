@@ -27,7 +27,18 @@ function buildToken(user) {
 }
 
 function normalizeEmail(email) {
-  return email.toLowerCase().trim();
+  return String(email || "").toLowerCase().trim();
+}
+
+function resolveRegistrationEmail(email, phone) {
+  const normalizedEmail = normalizeEmail(email);
+  if (normalizedEmail) {
+    return normalizedEmail;
+  }
+
+  const phoneSlug = normalizePhone(phone).replace(/[^a-zA-Z0-9]/g, "");
+  const fallbackId = phoneSlug || `${Date.now()}${Math.floor(Math.random() * 100000)}`;
+  return `phone-${fallbackId}@noemail.local`;
 }
 
 function buildDefaultFullName(email, fullName) {
@@ -168,7 +179,7 @@ function deliverOtp({ code, channel, target, purpose }) {
 }
 
 async function registerInMemory({ fullName, email, phone, password }) {
-  const normalizedEmail = normalizeEmail(email);
+  const normalizedEmail = resolveRegistrationEmail(email, phone);
   const existing = memoryUsers.find((item) => item.email === normalizedEmail);
 
   if (existing) {
@@ -423,13 +434,21 @@ async function requestOtp({ purpose, channel, target }) {
 }
 
 async function verifyRegistrationOtp({ otpSessionId, otpCode, email, phone }) {
+  const candidates = [];
   const emailTarget = normalizeEmail(email);
   const phoneTarget = normalizePhone(phone);
 
-  const candidates = [
-    { channel: "EMAIL", target: emailTarget },
-    { channel: "PHONE", target: phoneTarget }
-  ];
+  if (emailTarget) {
+    candidates.push({ channel: "EMAIL", target: emailTarget });
+  }
+
+  if (phoneTarget) {
+    candidates.push({ channel: "PHONE", target: phoneTarget });
+  }
+
+  if (candidates.length === 0) {
+    throw new ApiError(400, "Provide a phone number or email for OTP verification", "MISSING_IDENTIFIER");
+  }
 
   let lastError = null;
   for (const candidate of candidates) {
@@ -478,7 +497,7 @@ async function loginInMemory({ email, password }) {
 }
 
 async function register({ fullName, email, phone, password, otpSessionId, otpCode }) {
-  const normalizedEmail = normalizeEmail(email);
+  const normalizedEmail = resolveRegistrationEmail(email, phone);
   const resolvedFullName = buildDefaultFullName(normalizedEmail, fullName);
   const resolvedPhone = normalizePhone(buildDefaultPhone(phone));
 
