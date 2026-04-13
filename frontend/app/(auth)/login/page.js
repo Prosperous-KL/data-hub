@@ -68,7 +68,7 @@ export default function LoginPage() {
         <section className="p-6 sm:p-8 md:p-10">
           <form onSubmit={onSubmit} className="mx-auto w-full max-w-md animate-floatUp">
             <h1 className="text-3xl font-black text-slate-900" style={{ fontFamily: "var(--font-heading)" }}>
-              Welcome back
+              Welcome Back
             </h1>
             <div className="mt-3">
               <Image
