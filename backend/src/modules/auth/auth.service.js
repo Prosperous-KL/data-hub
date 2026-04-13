@@ -803,5 +803,14 @@ module.exports = {
   requestPasswordRecoveryOtp,
   resetPasswordWithOtp,
   deleteAccount,
-  updateUsername
+  updateUsername,
+  getRegisteredUsersInMemory: () =>
+    memoryUsers.map((user) => ({
+      id: user.id,
+      full_name: user.full_name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      created_at: user.created_at
+    }))
 };

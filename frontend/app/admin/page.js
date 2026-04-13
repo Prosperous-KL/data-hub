@@ -21,7 +21,7 @@ export default function AdminPage() {
 
     try {
       const [usersResponse, failedResponse] = await Promise.all([
-        apiRequest("/api/admin/users?limit=50"),
+        apiRequest("/api/admin/users?limit=500"),
         apiRequest("/api/admin/transactions/failed?limit=100")
       ]);
       setUsers(Array.isArray(usersResponse?.users) ? usersResponse.users : []);
@@ -37,6 +37,12 @@ export default function AdminPage() {
 
   useEffect(() => {
     loadData();
+
+    const refreshInterval = setInterval(() => {
+      loadData();
+    }, 15000);
+
+    return () => clearInterval(refreshInterval);
   }, []);
 
   async function submitRefund(event) {
@@ -95,7 +101,8 @@ export default function AdminPage() {
           </section>
 
           <section className="panel p-4">
-            <h3 className="text-sm font-semibold text-slate-700">Users ({users.length})</h3>
+            <h3 className="text-sm font-semibold text-slate-700">Customer Records ({users.length})</h3>
+            <p className="mt-1 text-xs text-slate-500">Customer identity, wallet balance, transaction count, and account role.</p>
             <div className="mt-3 overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead>
@@ -103,7 +110,10 @@ export default function AdminPage() {
                     <th className="pb-2 pr-4">Name</th>
                     <th className="pb-2 pr-4">Email</th>
                     <th className="pb-2 pr-4">Phone</th>
+                    <th className="pb-2 pr-4">Wallet Balance</th>
+                    <th className="pb-2 pr-4">Transactions</th>
                     <th className="pb-2 pr-4">Role</th>
+                    <th className="pb-2 pr-4">Joined</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -112,7 +122,10 @@ export default function AdminPage() {
                       <td className="py-2 pr-4">{user.full_name}</td>
                       <td className="py-2 pr-4">{user.email}</td>
                       <td className="py-2 pr-4">{user.phone}</td>
+                      <td className="py-2 pr-4">GHS {Number(user.wallet_balance || 0).toFixed(2)}</td>
+                      <td className="py-2 pr-4">{Number(user.transaction_count || 0)}</td>
                       <td className="py-2 pr-4">{user.role}</td>
+                      <td className="py-2 pr-4">{user.created_at ? new Date(user.created_at).toLocaleDateString("en-GB") : "-"}</td>
                     </tr>
                   ))}
                 </tbody>

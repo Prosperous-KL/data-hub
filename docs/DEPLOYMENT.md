@@ -115,6 +115,7 @@ Backend `.env` required keys:
     - EXPRESSPAY_CALLBACK_SECRET
     - VTU_API_KEY (required when `VTU_PROVIDER=REAL`)
     - VTU_BASE_URL (required when `VTU_PROVIDER=REAL`)
+    - VTU_SIMULATE_FAILURE_SUFFIX (optional, only for simulated VTU failure testing)
 
 ### Going Live for Real Data Delivery
 

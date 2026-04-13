@@ -108,6 +108,7 @@ curl -X POST http://localhost:4000/api/payment/callback \
 - Idempotency key required for payment initiate and data purchase
 - Automatic refund writes independent credit transaction with audit metadata
 - Ledger keeps before/after wallet balances for each financial event
+- In simulated VTU mode, `VTU_SIMULATE_FAILURE_SUFFIX` can be set to force failures for matching recipient numbers during testing
 
 ## Automated Tests
 

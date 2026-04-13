@@ -2,6 +2,7 @@ const { v4: uuidv4 } = require("uuid");
 const pool = require("../../db/pool");
 const ApiError = require("../../utils/apiError");
 const walletService = require("../wallet/wallet.service");
+const authService = require("../auth/auth.service");
 
 function shouldUseMemoryFallback(error) {
   if (!error || error instanceof ApiError) {
@@ -24,9 +25,24 @@ function shouldUseMemoryFallback(error) {
 async function listUsers(limit = 100) {
   try {
     const result = await pool.query(
-      `SELECT id, full_name, email, phone, role, created_at
-       FROM users
-       ORDER BY created_at DESC
+      `SELECT
+         u.id,
+         u.full_name,
+         u.email,
+         u.phone,
+         u.role,
+         u.created_at,
+         COALESCE(w.available_balance, 0) AS wallet_balance,
+         COALESCE(tx.transaction_count, 0) AS transaction_count,
+         COALESCE(tx.last_transaction_at, u.created_at) AS last_transaction_at
+       FROM users u
+       LEFT JOIN wallets w ON w.user_id = u.id
+       LEFT JOIN (
+         SELECT user_id, COUNT(*)::int AS transaction_count, MAX(created_at) AS last_transaction_at
+         FROM transactions
+         GROUP BY user_id
+       ) tx ON tx.user_id = u.id
+       ORDER BY u.created_at DESC
        LIMIT $1`,
       [limit]
     );
@@ -34,7 +50,12 @@ async function listUsers(limit = 100) {
     return result.rows;
   } catch (error) {
     if (shouldUseMemoryFallback(error)) {
-      return [];
+      return authService.getRegisteredUsersInMemory().map((user) => ({
+        ...user,
+        wallet_balance: 0,
+        transaction_count: 0,
+        last_transaction_at: user.created_at
+      }));
     }
 
     throw error;

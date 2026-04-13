@@ -56,8 +56,8 @@ export default function WalletFundingPage() {
     <ProtectedRoute>
       <AppShell>
         <section className="panel max-w-2xl animate-floatUp p-5">
-          <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>Fund Wallet (MoMo)</h2>
-          <p className="mt-1 text-sm text-slate-600">Enter the phone number that will approve the MoMo payment.</p>
+          <h2 className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>Initiate Mobile Money Funding</h2>
+          <p className="mt-1 text-sm text-slate-600">Enter the mobile money number that will receive the payment prompt and approve the transfer.</p>
 
           <ErrorAlert message={error} />
 
@@ -82,14 +82,14 @@ export default function WalletFundingPage() {
             <input
               className="input"
               type="text"
-              placeholder="Phone number to pay from"
+              placeholder="Number that will pay (MoMo)"
               value={form.momoNumber}
               onChange={(event) => setForm({ ...form, momoNumber: event.target.value })}
               required
             />
 
             <button type="submit" disabled={loading} className="btn-primary w-full">
-              {loading ? "Initiating..." : "Initiate Funding"}
+              {loading ? "Initiating..." : "Send Mobile Money Prompt"}
             </button>
           </form>
 
