@@ -4,7 +4,7 @@ services:
     runtime: node
     rootDir: backend
     buildCommand: npm install
-    startCommand: npm start
+    startCommand: npm run vtu:start
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV
