@@ -732,10 +732,34 @@ async function deleteAccount({ userId, password, otpSessionId, otpCode, channel 
     });
 
     await withTransaction(async (client) => {
-      await client.query(`DELETE FROM otp_codes WHERE target = $1`, [user.email]);
+      const normalizedEmail = normalizeEmail(user.email);
+      const normalizedPhone = normalizePhone(user.phone);
+
+      // Remove OTP records tied to this user's contact targets or metadata.
+      await client.query(
+        `DELETE FROM otp_codes
+         WHERE target = ANY($1::text[])
+            OR metadata->>'userId' = $2`,
+        [[normalizedEmail, normalizedPhone], userId]
+      );
+
+      // Delete user-owned payment records first (depends on user/wallet FKs).
+      await client.query(`DELETE FROM payments WHERE user_id = $1`, [userId]);
+
+      // Delete purchase records before transactions because transaction_id is RESTRICT.
+      await client.query(`DELETE FROM data_purchases WHERE user_id = $1`, [userId]);
+
+      // Deleting transactions will also remove ledger rows via ON DELETE CASCADE.
       await client.query(`DELETE FROM transactions WHERE user_id = $1`, [userId]);
+
+      // Wallet can now be deleted safely.
       await client.query(`DELETE FROM wallets WHERE user_id = $1`, [userId]);
-      await client.query(`DELETE FROM users WHERE id = $1`, [userId]);
+
+      // Finally delete the user account.
+      const deletedUser = await client.query(`DELETE FROM users WHERE id = $1 RETURNING id`, [userId]);
+      if (deletedUser.rows.length === 0) {
+        throw new ApiError(404, "Account not found", "ACCOUNT_NOT_FOUND");
+      }
     });
 
     return { message: "Account deleted successfully" };
@@ -769,6 +793,13 @@ async function deleteAccount({ userId, password, otpSessionId, otpCode, channel 
         channel,
         target: otpTarget
       });
+
+      for (let index = memoryOtps.length - 1; index >= 0; index -= 1) {
+        const item = memoryOtps[index];
+        if (item.target === normalizeEmail(user.email) || item.target === normalizePhone(user.phone)) {
+          memoryOtps.splice(index, 1);
+        }
+      }
 
       const index = memoryUsers.findIndex((item) => item.id === userId);
       if (index !== -1) {
