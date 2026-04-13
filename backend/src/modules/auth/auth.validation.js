@@ -22,7 +22,7 @@ const loginSchema = z.object({
 
 const otpRequestSchema = z.object({
   body: z.object({
-    purpose: z.enum(["REGISTER", "PASSWORD_RESET"]),
+    purpose: z.enum(["REGISTER", "PASSWORD_RESET", "ACCOUNT_DELETE"]),
     channel: z.enum(["EMAIL", "PHONE"]),
     target: z.string().min(4)
   })
@@ -46,7 +46,10 @@ const passwordResetSchema = z.object({
 
 const deleteAccountSchema = z.object({
   body: z.object({
-    password: z.string().min(8)
+    password: z.string().min(8),
+    otpSessionId: z.string().uuid(),
+    otpCode: otpCodeSchema,
+    channel: z.enum(["EMAIL", "PHONE"])
   })
 });
 

@@ -7,18 +7,54 @@ import AppShell from "@/components/AppShell";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorAlert from "@/components/ErrorAlert";
 import { apiRequest } from "@/lib/api";
-import { clearSession } from "@/lib/auth";
+import { clearSession, getUser } from "@/lib/auth";
 
 export default function DeleteAccountPage() {
   const router = useRouter();
+  const user = getUser();
   const [password, setPassword] = useState("");
   const [confirmText, setConfirmText] = useState("");
+  const [channel, setChannel] = useState("PHONE");
+  const [otpSessionId, setOtpSessionId] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [devOtp, setDevOtp] = useState("");
+  const [sendingOtp, setSendingOtp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
   const confirmRequired = "DELETE MY ACCOUNT";
-  const canDelete = password && confirmText === confirmRequired;
+  const canDelete = password && confirmText === confirmRequired && otpSessionId && otpCode.length === 6;
+
+  async function requestOtp() {
+    setSendingOtp(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const target = channel === "EMAIL" ? user?.email : user?.phone;
+      if (!target) {
+        throw new Error(`No ${channel === "EMAIL" ? "email" : "phone number"} found for this account`);
+      }
+
+      const response = await apiRequest("/api/auth/otp/request", {
+        method: "POST",
+        body: {
+          purpose: "ACCOUNT_DELETE",
+          channel,
+          target
+        }
+      });
+
+      setOtpSessionId(response.otpSessionId || "");
+      setDevOtp(response.devOtp || "");
+      setMessage(`OTP sent to ${response.target || target}`);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setSendingOtp(false);
+    }
+  }
 
   async function deleteAccount() {
     setLoading(true);
@@ -26,9 +62,14 @@ export default function DeleteAccountPage() {
     setMessage("");
 
     try {
-      const response = await apiRequest("/api/auth/account", {
+      await apiRequest("/api/auth/account", {
         method: "DELETE",
-        body: { password }
+        body: {
+          password,
+          otpSessionId,
+          otpCode,
+          channel
+        }
       });
 
       setMessage("Account deleted successfully. Logging out...");
@@ -73,6 +114,57 @@ export default function DeleteAccountPage() {
             )}
 
             <div className="space-y-4 border-t border-slate-200 pt-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-2">OTP Channel</label>
+                <div className="flex gap-3 text-sm">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="delete-channel"
+                      value="PHONE"
+                      checked={channel === "PHONE"}
+                      onChange={() => setChannel("PHONE")}
+                      disabled={sendingOtp || loading}
+                    />
+                    Phone
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="delete-channel"
+                      value="EMAIL"
+                      checked={channel === "EMAIL"}
+                      onChange={() => setChannel("EMAIL")}
+                      disabled={sendingOtp || loading}
+                    />
+                    Email
+                  </label>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={requestOtp}
+                disabled={sendingOtp || loading}
+                className="w-full btn-primary disabled:opacity-50"
+              >
+                {sendingOtp ? "Sending OTP..." : otpSessionId ? "Resend OTP" : "Send Delete OTP"}
+              </button>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 mb-2">Enter OTP</label>
+                <input
+                  className="input"
+                  type="text"
+                  placeholder="Enter 6-digit OTP"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  disabled={loading}
+                  maxLength={6}
+                />
+                {devOtp && <p className="mt-1 text-xs text-slate-500">Dev OTP: {devOtp}</p>}
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-2">
                   Enter your password

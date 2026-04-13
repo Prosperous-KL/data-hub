@@ -93,7 +93,10 @@ router.delete("/account", authRequired, validate(deleteAccountSchema), async (re
   try {
     const result = await authService.deleteAccount({
       userId: req.user.sub,
-      password: req.validated.body.password
+      password: req.validated.body.password,
+      otpSessionId: req.validated.body.otpSessionId,
+      otpCode: req.validated.body.otpCode,
+      channel: req.validated.body.channel
     });
     return res.json({ success: true, ...result });
   } catch (error) {

@@ -657,10 +657,10 @@ async function login({ email, password }) {
   }
 }
 
-async function deleteAccount({ userId, password }) {
+async function deleteAccount({ userId, password, otpSessionId, otpCode, channel }) {
   try {
     const userResult = await pool.query(
-      `SELECT id, password_hash, email, full_name
+      `SELECT id, password_hash, email, phone, full_name
        FROM users
        WHERE id = $1`,
       [userId]
@@ -676,6 +676,19 @@ async function deleteAccount({ userId, password }) {
     if (!matches) {
       throw new ApiError(401, "Invalid password", "INVALID_PASSWORD");
     }
+
+    const otpTarget = channel === "EMAIL" ? normalizeEmail(user.email) : normalizePhone(user.phone);
+    if (!otpTarget) {
+      throw new ApiError(400, "No valid contact found for selected OTP channel", "INVALID_OTP_CHANNEL");
+    }
+
+    await verifyOtpRecord({
+      otpSessionId,
+      otpCode,
+      purpose: "ACCOUNT_DELETE",
+      channel,
+      target: otpTarget
+    });
 
     await withTransaction(async (client) => {
       await client.query(`DELETE FROM otp_codes WHERE target = $1`, [user.email]);
@@ -702,6 +715,19 @@ async function deleteAccount({ userId, password }) {
       if (!matches) {
         throw new ApiError(401, "Invalid password", "INVALID_PASSWORD");
       }
+
+      const otpTarget = channel === "EMAIL" ? normalizeEmail(user.email) : normalizePhone(user.phone);
+      if (!otpTarget) {
+        throw new ApiError(400, "No valid contact found for selected OTP channel", "INVALID_OTP_CHANNEL");
+      }
+
+      verifyMemoryOtp({
+        otpSessionId,
+        otpCode,
+        purpose: "ACCOUNT_DELETE",
+        channel,
+        target: otpTarget
+      });
 
       const index = memoryUsers.findIndex((item) => item.id === userId);
       if (index !== -1) {

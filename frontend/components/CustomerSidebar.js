@@ -67,9 +67,6 @@ export default function CustomerSidebar() {
           <Link href="/change-username" className="block rounded-lg bg-brand-sky text-white px-3 py-2 text-xs font-semibold text-center hover:bg-brand-sky/90 transition">
             Change Username
           </Link>
-          <Link href="/account-recovery" className="block rounded-lg bg-brand-sky text-white px-3 py-2 text-xs font-semibold text-center hover:bg-brand-sky/90 transition">
-            Recovery Account
-          </Link>
           <Link href="/delete-account" className="block rounded-lg bg-red-600 text-white px-3 py-2 text-xs font-semibold text-center hover:bg-red-700 transition">
             Delete Account
           </Link>
