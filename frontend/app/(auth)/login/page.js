@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -69,6 +70,16 @@ export default function LoginPage() {
             <h1 className="text-3xl font-black text-slate-900" style={{ fontFamily: "var(--font-heading)" }}>
               Welcome back
             </h1>
+            <div className="mt-3">
+              <Image
+                src="/logo.jpg"
+                alt="Prosperous TechPro logo"
+                width={120}
+                height={120}
+                className="rounded-xl border border-slate-200 object-cover"
+                priority
+              />
+            </div>
             <p className="mt-2 text-sm text-slate-600">
               Sign in to continue buying internet bundles instantly.
             </p>

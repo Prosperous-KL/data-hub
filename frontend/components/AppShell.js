@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { clearSession, getUser } from "../lib/auth";
@@ -26,11 +27,21 @@ export default function AppShell({ children }) {
     <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col px-4 py-6 sm:px-6 lg:px-8">
       <header className="panel mb-6 animate-floatUp px-5 py-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+          <div className="flex items-center gap-3">
+            <Image
+              src="/logo.jpg"
+              alt="Prosperous TechPro logo"
+              width={56}
+              height={56}
+              className="rounded-lg border border-slate-200 object-cover"
+              priority
+            />
+            <div>
             <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "var(--font-heading)" }}>
               Prosperous Data Hub
             </h1>
             <p className="text-sm text-slate-600">Ghana VTU Portal for instant internet data delivery</p>
+            </div>
           </div>
           <div className="text-sm text-slate-700">
             <div>{user?.full_name || user?.email || "User"}</div>
