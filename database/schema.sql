@@ -126,4 +126,77 @@ ON data_purchases(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_data_purchases_status
 ON data_purchases(status);
 
+CREATE OR REPLACE FUNCTION set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_users_set_updated_at ON users;
+CREATE TRIGGER trg_users_set_updated_at
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_wallets_set_updated_at ON wallets;
+CREATE TRIGGER trg_wallets_set_updated_at
+BEFORE UPDATE ON wallets
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_transactions_set_updated_at ON transactions;
+CREATE TRIGGER trg_transactions_set_updated_at
+BEFORE UPDATE ON transactions
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_payments_set_updated_at ON payments;
+CREATE TRIGGER trg_payments_set_updated_at
+BEFORE UPDATE ON payments
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_data_purchases_set_updated_at ON data_purchases;
+CREATE TRIGGER trg_data_purchases_set_updated_at
+BEFORE UPDATE ON data_purchases
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'otp_codes_attempts_non_negative'
+  ) THEN
+    ALTER TABLE otp_codes
+    ADD CONSTRAINT otp_codes_attempts_non_negative CHECK (attempts >= 0);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'otp_codes_expires_after_created'
+  ) THEN
+    ALTER TABLE otp_codes
+    ADD CONSTRAINT otp_codes_expires_after_created CHECK (expires_at >= created_at);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'wallets_total_balance_non_negative'
+  ) THEN
+    ALTER TABLE wallets
+    ADD CONSTRAINT wallets_total_balance_non_negative CHECK ((available_balance + locked_balance) >= 0);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conname = 'idempotency_response_status_range'
+  ) THEN
+    ALTER TABLE idempotency_keys
+    ADD CONSTRAINT idempotency_response_status_range CHECK (response_status BETWEEN 100 AND 599);
+  END IF;
+END $$;
+
 COMMIT;
