@@ -16,16 +16,10 @@ function isValidGhanaPhone(value) {
   return ghPhoneRegex.test(normalized);
 }
 
-function isSmsDeliveryNotConfigured(error) {
-  const message = String(error?.message || "").toLowerCase();
-  return error?.code === "SMS_DELIVERY_NOT_CONFIGURED" || message.includes("hubtel sms is not configured");
-}
-
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "" });
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [verificationChannel, setVerificationChannel] = useState("PHONE");
   const [otpSessionId, setOtpSessionId] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [devOtp, setDevOtp] = useState("");
@@ -39,14 +33,13 @@ export default function RegisterPage() {
     setError("");
     setMessage("");
 
-    const target = verificationChannel === "EMAIL" ? form.email : form.phone;
-    if (!target) {
-      setError(`Enter your ${verificationChannel === "EMAIL" ? "email" : "phone number"} first.`);
+    if (!form.phone) {
+      setError("Enter your phone number first.");
       setSendingOtp(false);
       return;
     }
 
-    if (verificationChannel === "PHONE" && !isValidGhanaPhone(form.phone)) {
+    if (!isValidGhanaPhone(form.phone)) {
       setError("Enter a valid Ghana phone number (e.g. 024xxxxxxx or +23324xxxxxxx).");
       setSendingOtp(false);
       return;
@@ -57,44 +50,15 @@ export default function RegisterPage() {
         method: "POST",
         body: {
           purpose: "REGISTER",
-          channel: verificationChannel,
-          target
+          channel: "PHONE",
+          target: form.phone
         }
       });
 
       setOtpSessionId(response.otpSessionId || "");
       setDevOtp(response.devOtp || "");
-      setMessage(response.message || `Prosperous Data Hub Confirmation sent via ${response.deliveryMethod || "delivery"}.`);
+      setMessage(response.message || "Prosperous Data Hub Confirmation sent via SMS.");
     } catch (requestError) {
-      if (verificationChannel === "PHONE" && isSmsDeliveryNotConfigured(requestError)) {
-        if (form.email) {
-          try {
-            const fallbackResponse = await apiRequest("/api/auth/otp/request", {
-              method: "POST",
-              body: {
-                purpose: "REGISTER",
-                channel: "EMAIL",
-                target: form.email
-              }
-            });
-
-            setVerificationChannel("EMAIL");
-            setOtpSessionId(fallbackResponse.otpSessionId || "");
-            setDevOtp(fallbackResponse.devOtp || "");
-            setMessage(
-              `${fallbackResponse.message || "Prosperous Data Hub Confirmation sent via Gmail."} SMS channel is unavailable, so email verification was used.`
-            );
-            return;
-          } catch (fallbackError) {
-            setError(fallbackError.message);
-            return;
-          }
-        }
-
-        setError("SMS OTP is unavailable right now. Add an email and choose Email verification, or configure Hubtel SMS on the backend.");
-        return;
-      }
-
       setError(requestError.message);
     } finally {
       setSendingOtp(false);
@@ -156,7 +120,7 @@ export default function RegisterPage() {
 
         <div className="mt-4 space-y-3">
           <input className="input" type="text" placeholder="Full name" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} required />
-          <input className="input" type="email" placeholder="Email (optional)" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
+          <input className="input" type="email" placeholder="Gmail address" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required />
           <input className="input" type="text" placeholder="Phone number" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} required />
           <PasswordField
             placeholder="Password"
@@ -175,28 +139,7 @@ export default function RegisterPage() {
 
           <div className="rounded-xl border border-slate-200 p-3">
             <p className="mb-2 text-xs font-semibold uppercase text-slate-500">OTP verification</p>
-            <div className="mb-2 flex gap-3 text-sm">
-              <label className="flex items-center gap-1">
-                <input
-                  type="radio"
-                  name="verification-channel"
-                  value="EMAIL"
-                  checked={verificationChannel === "EMAIL"}
-                  onChange={() => setVerificationChannel("EMAIL")}
-                />
-                Email
-              </label>
-              <label className="flex items-center gap-1">
-                <input
-                  type="radio"
-                  name="verification-channel"
-                  value="PHONE"
-                  checked={verificationChannel === "PHONE"}
-                  onChange={() => setVerificationChannel("PHONE")}
-                />
-                Phone
-              </label>
-            </div>
+            <p className="mb-2 text-xs text-slate-600">Registration OTP is sent to your phone number only.</p>
 
             <button type="button" onClick={sendOtp} className="btn-primary w-full" disabled={sendingOtp}>
               {sendingOtp ? "Sending OTP..." : otpSessionId ? "Resend OTP" : "Send OTP"}

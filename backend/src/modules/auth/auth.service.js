@@ -444,11 +444,14 @@ async function requestOtp({ purpose, channel, target }) {
   const normalizedTarget = normalizeTarget(channel, target);
 
   if (purpose === "REGISTER") {
+    if (channel !== "PHONE") {
+      throw new ApiError(400, "Registration OTP must use phone verification", "INVALID_REGISTER_OTP_CHANNEL");
+    }
+
     try {
-      const field = channel === "EMAIL" ? "email" : "phone";
-      const existing = await pool.query(`SELECT id FROM users WHERE ${field} = $1 LIMIT 1`, [normalizedTarget]);
+      const existing = await pool.query("SELECT id FROM users WHERE phone = $1 LIMIT 1", [normalizedTarget]);
       if (existing.rows.length > 0) {
-        throw new ApiError(409, `${channel === "EMAIL" ? "Email" : "Phone number"} already registered`, "IDENTIFIER_EXISTS");
+        throw new ApiError(409, "Phone number already registered", "IDENTIFIER_EXISTS");
       }
     } catch (error) {
       if (!shouldUseMemoryFallback(error)) {
@@ -489,40 +492,20 @@ async function requestOtp({ purpose, channel, target }) {
   return response;
 }
 
-async function verifyRegistrationOtp({ otpSessionId, otpCode, email, phone }) {
-  const candidates = [];
-  const emailTarget = normalizeEmail(email);
+async function verifyRegistrationOtp({ otpSessionId, otpCode, phone }) {
   const phoneTarget = normalizePhone(phone);
 
-  if (emailTarget) {
-    candidates.push({ channel: "EMAIL", target: emailTarget });
+  if (!phoneTarget) {
+    throw new ApiError(400, "Provide a phone number for OTP verification", "MISSING_PHONE_IDENTIFIER");
   }
 
-  if (phoneTarget) {
-    candidates.push({ channel: "PHONE", target: phoneTarget });
-  }
-
-  if (candidates.length === 0) {
-    throw new ApiError(400, "Provide a phone number or email for OTP verification", "MISSING_IDENTIFIER");
-  }
-
-  let lastError = null;
-  for (const candidate of candidates) {
-    try {
-      await verifyOtpRecord({
-        otpSessionId,
-        otpCode,
-        purpose: "REGISTER",
-        channel: candidate.channel,
-        target: candidate.target
-      });
-      return;
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  throw lastError || new ApiError(400, "Invalid OTP code", "INVALID_OTP_CODE");
+  await verifyOtpRecord({
+    otpSessionId,
+    otpCode,
+    purpose: "REGISTER",
+    channel: "PHONE",
+    target: phoneTarget
+  });
 }
 
 async function loginInMemory({ email, password }) {
@@ -561,7 +544,6 @@ async function register({ fullName, email, phone, password, otpSessionId, otpCod
   await verifyRegistrationOtp({
     otpSessionId,
     otpCode,
-    email: normalizedEmail,
     phone: resolvedPhone
   });
 

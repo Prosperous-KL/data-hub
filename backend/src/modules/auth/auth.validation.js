@@ -14,7 +14,7 @@ function isValidGhanaPhone(value) {
 const registerSchema = z.object({
   body: z.object({
     fullName: z.string().min(2),
-    email: z.union([z.string().email(), z.literal("")]).optional(),
+    email: z.string().email("Email must be a valid Gmail or other valid email address"),
     phone: z.string().refine(isValidGhanaPhone, "Phone must be a valid Ghana number"),
     password: z.string().min(8),
     otpSessionId: z.string().uuid(),
@@ -35,6 +35,14 @@ const otpRequestSchema = z.object({
     channel: z.enum(["EMAIL", "PHONE"]),
     target: z.string().min(4)
   }).superRefine((value, ctx) => {
+    if (value.purpose === "REGISTER" && value.channel !== "PHONE") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Registration OTP must use phone verification",
+        path: ["channel"]
+      });
+    }
+
     if (value.channel === "PHONE" && !isValidGhanaPhone(value.target)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
