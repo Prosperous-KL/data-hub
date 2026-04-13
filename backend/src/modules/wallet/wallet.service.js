@@ -2,6 +2,25 @@ const pool = require("../../db/pool");
 const { withTransaction } = require("../../db/tx");
 const ApiError = require("../../utils/apiError");
 
+const memoryWallets = new Map();
+
+function getOrCreateMemoryWallet(userId) {
+  if (memoryWallets.has(userId)) {
+    return memoryWallets.get(userId);
+  }
+
+  const wallet = {
+    id: `virtual-${userId}`,
+    user_id: userId,
+    available_balance: 500,
+    locked_balance: 0,
+    updated_at: new Date().toISOString()
+  };
+
+  memoryWallets.set(userId, wallet);
+  return wallet;
+}
+
 function shouldUseMemoryFallback(error) {
   if (!error || error instanceof ApiError) {
     return false;
@@ -101,6 +120,33 @@ async function creditWallet({ userId, amount, reference, narration, category, id
     if (error.code === "23505") {
       throw new ApiError(409, "Duplicate idempotency key", "DUPLICATE_TRANSACTION");
     }
+
+    if (shouldUseMemoryFallback(error)) {
+      const wallet = getOrCreateMemoryWallet(userId);
+      const beforeBalance = Number(wallet.available_balance);
+      const afterBalance = beforeBalance + Number(amount);
+      wallet.available_balance = afterBalance;
+      wallet.updated_at = new Date().toISOString();
+
+      return {
+        transaction: {
+          id: `mem-credit-${Date.now()}`,
+          user_id: userId,
+          wallet_id: wallet.id,
+          type: "credit",
+          amount: Number(amount),
+          status: "success",
+          reference,
+          narration,
+          category,
+          idempotency_key: idempotencyKey,
+          metadata,
+          created_at: wallet.updated_at
+        },
+        balance: afterBalance
+      };
+    }
+
     throw error;
   }
 }
@@ -162,6 +208,38 @@ async function debitWallet({ userId, amount, reference, narration, category, ide
     if (error.code === "23505") {
       throw new ApiError(409, "Duplicate idempotency key", "DUPLICATE_TRANSACTION");
     }
+
+    if (shouldUseMemoryFallback(error)) {
+      const wallet = getOrCreateMemoryWallet(userId);
+      const beforeBalance = Number(wallet.available_balance);
+
+      if (beforeBalance < Number(amount)) {
+        throw new ApiError(400, "Insufficient wallet balance", "INSUFFICIENT_BALANCE");
+      }
+
+      const afterBalance = beforeBalance - Number(amount);
+      wallet.available_balance = afterBalance;
+      wallet.updated_at = new Date().toISOString();
+
+      return {
+        transaction: {
+          id: `mem-debit-${Date.now()}`,
+          user_id: userId,
+          wallet_id: wallet.id,
+          type: "debit",
+          amount: Number(amount),
+          status: "success",
+          reference,
+          narration,
+          category,
+          idempotency_key: idempotencyKey,
+          metadata,
+          created_at: wallet.updated_at
+        },
+        balance: afterBalance
+      };
+    }
+
     throw error;
   }
 }

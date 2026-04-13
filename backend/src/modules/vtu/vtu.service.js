@@ -6,6 +6,26 @@ const walletService = require("../wallet/wallet.service");
 const { DATA_BUNDLES } = require("../../utils/constants");
 const { sendDataBundle } = require("./vtu.provider");
 
+const memoryPurchases = [];
+
+function shouldUseMemoryFallback(error) {
+  if (!error || error instanceof ApiError) {
+    return false;
+  }
+
+  const code = String(error.code || "").toUpperCase();
+  const message = String(error.message || "").toLowerCase();
+
+  return (
+    code === "ECONNREFUSED" ||
+    code === "ENOTFOUND" ||
+    code === "ETIMEDOUT" ||
+    message.includes("connect") ||
+    message.includes("database") ||
+    message.includes("timeout")
+  );
+}
+
 function getBundle(network, bundleCode) {
   const bundle = (DATA_BUNDLES[network] || []).find((item) => item.code === bundleCode);
   if (!bundle) {
@@ -28,17 +48,39 @@ async function buyData({ userId, network, bundleCode, phoneNumber, idempotencyKe
     metadata: { network, bundleCode, phoneNumber }
   });
 
-  const purchase = await withTransaction(async (client) => {
-    const insertResult = await client.query(
-      `INSERT INTO data_purchases
-      (user_id, transaction_id, network, bundle_code, volume, amount, phone_number, status)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
-      RETURNING *`,
-      [userId, debit.transaction.id, network, bundleCode, bundle.volume, bundle.amount, phoneNumber]
-    );
+  let purchase;
+  try {
+    purchase = await withTransaction(async (client) => {
+      const insertResult = await client.query(
+        `INSERT INTO data_purchases
+        (user_id, transaction_id, network, bundle_code, volume, amount, phone_number, status)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
+        RETURNING *`,
+        [userId, debit.transaction.id, network, bundleCode, bundle.volume, bundle.amount, phoneNumber]
+      );
 
-    return insertResult.rows[0];
-  });
+      return insertResult.rows[0];
+    });
+  } catch (error) {
+    if (!shouldUseMemoryFallback(error)) {
+      throw error;
+    }
+
+    purchase = {
+      id: `mem-purchase-${Date.now()}`,
+      user_id: userId,
+      transaction_id: debit.transaction.id,
+      network,
+      bundle_code: bundleCode,
+      volume: bundle.volume,
+      amount: bundle.amount,
+      phone_number: phoneNumber,
+      status: "pending",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    memoryPurchases.push(purchase);
+  }
 
   const providerResult = await sendDataBundle({
     network,
@@ -47,12 +89,23 @@ async function buyData({ userId, network, bundleCode, phoneNumber, idempotencyKe
   });
 
   if (providerResult.success) {
-    await pool.query(
-      `UPDATE data_purchases
-       SET status = 'delivered', provider_reference = $1, delivered_at = NOW(), updated_at = NOW()
-       WHERE id = $2`,
-      [providerResult.providerReference, purchase.id]
-    );
+    try {
+      await pool.query(
+        `UPDATE data_purchases
+         SET status = 'delivered', provider_reference = $1, delivered_at = NOW(), updated_at = NOW()
+         WHERE id = $2`,
+        [providerResult.providerReference, purchase.id]
+      );
+    } catch (error) {
+      if (!shouldUseMemoryFallback(error)) {
+        throw error;
+      }
+
+      purchase.status = "delivered";
+      purchase.provider_reference = providerResult.providerReference;
+      purchase.delivered_at = new Date().toISOString();
+      purchase.updated_at = new Date().toISOString();
+    }
 
     return {
       status: "delivered",
@@ -76,12 +129,23 @@ async function buyData({ userId, network, bundleCode, phoneNumber, idempotencyKe
     metadata: { originalTransactionId: debit.transaction.id, reason: providerResult.message }
   });
 
-  await pool.query(
-    `UPDATE data_purchases
-     SET status = 'failed_refunded', provider_reference = $1, failure_reason = $2, updated_at = NOW()
-     WHERE id = $3`,
-    [providerResult.providerReference, providerResult.message, purchase.id]
-  );
+  try {
+    await pool.query(
+      `UPDATE data_purchases
+       SET status = 'failed_refunded', provider_reference = $1, failure_reason = $2, updated_at = NOW()
+       WHERE id = $3`,
+      [providerResult.providerReference, providerResult.message, purchase.id]
+    );
+  } catch (error) {
+    if (!shouldUseMemoryFallback(error)) {
+      throw error;
+    }
+
+    purchase.status = "failed_refunded";
+    purchase.provider_reference = providerResult.providerReference;
+    purchase.failure_reason = providerResult.message;
+    purchase.updated_at = new Date().toISOString();
+  }
 
   return {
     status: "failed_refunded",

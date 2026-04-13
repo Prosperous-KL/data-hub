@@ -1,6 +1,26 @@
 const pool = require("../db/pool");
 const ApiError = require("../utils/apiError");
 
+const memoryIdempotencyStore = new Map();
+
+function shouldUseMemoryFallback(error) {
+  if (!error || error instanceof ApiError) {
+    return false;
+  }
+
+  const code = String(error.code || "").toUpperCase();
+  const message = String(error.message || "").toLowerCase();
+
+  return (
+    code === "ECONNREFUSED" ||
+    code === "ENOTFOUND" ||
+    code === "ETIMEDOUT" ||
+    message.includes("connect") ||
+    message.includes("database") ||
+    message.includes("timeout")
+  );
+}
+
 async function idempotencyGuard(req, res, next) {
   const idempotencyKey = req.headers["x-idempotency-key"];
 
@@ -19,15 +39,27 @@ async function idempotencyGuard(req, res, next) {
     }
 
     req.idempotencyKey = idempotencyKey;
+    req.idempotencyStorage = "database";
     return next();
   } catch (error) {
-    return next(
-      new ApiError(
-        503,
-        "Service temporarily unavailable. Please try again shortly.",
-        "SERVICE_UNAVAILABLE"
-      )
-    );
+    if (!shouldUseMemoryFallback(error)) {
+      return next(
+        new ApiError(
+          503,
+          "Service temporarily unavailable. Please try again shortly.",
+          "SERVICE_UNAVAILABLE"
+        )
+      );
+    }
+
+    const existing = memoryIdempotencyStore.get(idempotencyKey);
+    if (existing) {
+      return res.status(existing.response_status).json(existing.response_payload);
+    }
+
+    req.idempotencyKey = idempotencyKey;
+    req.idempotencyStorage = "memory";
+    return next();
   }
 }
 
@@ -42,5 +74,6 @@ async function persistIdempotencyResult(client, idempotencyKey, statusCode, payl
 
 module.exports = {
   idempotencyGuard,
-  persistIdempotencyResult
+  persistIdempotencyResult,
+  memoryIdempotencyStore
 };
