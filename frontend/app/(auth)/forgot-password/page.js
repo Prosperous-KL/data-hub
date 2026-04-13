@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import ErrorAlert from "../../../components/ErrorAlert";
+import PasswordField from "../../../components/PasswordField";
 import { apiRequest } from "../../../lib/api";
 
 export default function ForgotPasswordPage() {
@@ -117,14 +118,13 @@ export default function ForgotPasswordPage() {
             required
           />
 
-          <input
-            className="input"
-            type="password"
+          <PasswordField
             placeholder="New password"
             value={newPassword}
             onChange={(event) => setNewPassword(event.target.value)}
             minLength={8}
             required
+            name="new-password"
           />
         </div>
 

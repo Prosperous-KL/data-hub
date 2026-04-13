@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import ErrorAlert from "../../../components/ErrorAlert";
 import LoadingState from "../../../components/LoadingState";
+import PasswordField from "../../../components/PasswordField";
 import { apiRequest } from "../../../lib/api";
 import { saveSession } from "../../../lib/auth";
 
@@ -107,14 +108,13 @@ export default function LoginPage() {
                     Forgot password?
                   </Link>
                 </div>
-                <input
-                  className="input"
-                  type="password"
+                <PasswordField
                   placeholder="Enter your password"
                   value={form.password}
                   onChange={(event) => setForm({ ...form, password: event.target.value })}
                   autoComplete="current-password"
                   required
+                  name="login-password"
                 />
               </div>
             </div>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import ErrorAlert from "../../../components/ErrorAlert";
 import LoadingState from "../../../components/LoadingState";
+import PasswordField from "../../../components/PasswordField";
 import { apiRequest } from "../../../lib/api";
 import { saveSession } from "../../../lib/auth";
 
@@ -123,8 +124,20 @@ export default function RegisterPage() {
           <input className="input" type="text" placeholder="Full name" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} required />
           <input className="input" type="email" placeholder="Email (optional)" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} />
           <input className="input" type="text" placeholder="Phone number" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} required />
-          <input className="input" type="password" placeholder="Password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required />
-          <input className="input" type="password" placeholder="Confirm password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} required />
+          <PasswordField
+            placeholder="Password"
+            value={form.password}
+            onChange={(event) => setForm({ ...form, password: event.target.value })}
+            required
+            name="register-password"
+          />
+          <PasswordField
+            placeholder="Confirm password"
+            value={confirmPassword}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            required
+            name="register-confirm-password"
+          />
 
           <div className="rounded-xl border border-slate-200 p-3">
             <p className="mb-2 text-xs font-semibold uppercase text-slate-500">OTP verification</p>

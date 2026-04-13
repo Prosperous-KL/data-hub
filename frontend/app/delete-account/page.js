@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import AppShell from "@/components/AppShell";
+import PasswordField from "@/components/PasswordField";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorAlert from "@/components/ErrorAlert";
 import { apiRequest } from "@/lib/api";
@@ -169,13 +170,12 @@ export default function DeleteAccountPage() {
                 <label className="block text-xs font-semibold text-slate-600 mb-2">
                   Enter your password
                 </label>
-                <input
-                  className="input"
-                  type="password"
+                <PasswordField
                   placeholder="Your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
+                  name="delete-account-password"
                 />
               </div>
 
