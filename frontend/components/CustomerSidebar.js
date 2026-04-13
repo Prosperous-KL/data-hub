@@ -61,6 +61,9 @@ export default function CustomerSidebar() {
         </div>
 
         <div className="border-t border-slate-200 pt-4 space-y-2">
+          <Link href="/settings" className="block rounded-lg bg-slate-800 text-white px-3 py-2 text-xs font-semibold text-center hover:bg-slate-900 transition">
+            Settings
+          </Link>
           <Link href="/change-username" className="block rounded-lg bg-brand-sky text-white px-3 py-2 text-xs font-semibold text-center hover:bg-brand-sky/90 transition">
             Change Username
           </Link>

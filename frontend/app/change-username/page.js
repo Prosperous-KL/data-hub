@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import AppShell from "../components/AppShell";
-import ProtectedRoute from "../components/ProtectedRoute";
-import ErrorAlert from "../components/ErrorAlert";
-import LoadingState from "../components/LoadingState";
-import { apiRequest } from "../lib/api";
-import { getUser, saveSession } from "../lib/auth";
+import AppShell from "@/components/AppShell";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import ErrorAlert from "@/components/ErrorAlert";
+import LoadingState from "@/components/LoadingState";
+import { apiRequest } from "@/lib/api";
+import { getUser, saveSession } from "@/lib/auth";
 
 export default function ChangeUsernamePage() {
   const router = useRouter();

@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import AppShell from "../components/AppShell";
-import ProtectedRoute from "../components/ProtectedRoute";
-import ErrorAlert from "../components/ErrorAlert";
-import LoadingState from "../components/LoadingState";
-import { apiRequest } from "../lib/api";
+import AppShell from "@/components/AppShell";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import ErrorAlert from "@/components/ErrorAlert";
+import LoadingState from "@/components/LoadingState";
+import { apiRequest } from "@/lib/api";
 
 export default function AccountRecoveryPage() {
   const router = useRouter();

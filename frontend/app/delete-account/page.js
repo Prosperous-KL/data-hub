@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import AppShell from "../components/AppShell";
-import ProtectedRoute from "../components/ProtectedRoute";
-import ErrorAlert from "../components/ErrorAlert";
-import { apiRequest } from "../lib/api";
-import { clearSession } from "../lib/auth";
+import AppShell from "@/components/AppShell";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import ErrorAlert from "@/components/ErrorAlert";
+import { apiRequest } from "@/lib/api";
+import { clearSession } from "@/lib/auth";
 
 export default function DeleteAccountPage() {
   const router = useRouter();
