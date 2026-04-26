@@ -128,9 +128,13 @@ export default function RegisterVerifyPage() {
         <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
           Verify Your Phone
         </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          We sent a confirmation code to {maskedPhone}.
-        </p>
+        {sendingOtp && !otpSessionId ? (
+          <p className="mt-1 text-sm text-slate-600">Sending confirmation code to {maskedPhone}...</p>
+        ) : otpSessionId ? (
+          <p className="mt-1 text-sm text-slate-600">We sent a confirmation code to {maskedPhone}.</p>
+        ) : (
+          <p className="mt-1 text-sm text-slate-600">We could not send a confirmation code yet. Check your number and try again.</p>
+        )}
 
         <ErrorAlert message={error} />
         {message && <p className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-sm text-emerald-700">{message}</p>}
