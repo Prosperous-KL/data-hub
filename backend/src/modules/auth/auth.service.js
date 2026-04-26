@@ -211,6 +211,18 @@ function shouldUseMemoryFallback(error) {
   );
 }
 
+function shouldUseDevOtpDeliveryFallback(error) {
+  if (env.NODE_ENV === "production") {
+    return false;
+  }
+
+  if (!(error instanceof ApiError)) {
+    return false;
+  }
+
+  return ["SMS_DELIVERY_FAILED", "SMS_PROVIDER_ERROR", "SMS_DELIVERY_NOT_CONFIGURED"].includes(error.code);
+}
+
 function logMemoryFallbackOnce(error) {
   if (loggedMemoryFallback) {
     return;
@@ -463,12 +475,32 @@ async function requestOtp({ purpose, channel, target }) {
 
   const otp = await createOtpRecord({ purpose, channel, target: normalizedTarget });
 
-  const delivery = await deliverOtp({
-    code: otp.code,
-    channel,
-    target: normalizedTarget,
-    purpose
-  });
+  let delivery;
+  try {
+    delivery = await deliverOtp({
+      code: otp.code,
+      channel,
+      target: normalizedTarget,
+      purpose
+    });
+  } catch (error) {
+    if (!shouldUseDevOtpDeliveryFallback(error)) {
+      throw error;
+    }
+
+    console.warn("[auth.service] OTP delivery fallback enabled", {
+      purpose,
+      channel,
+      target: maskTarget(channel, normalizedTarget),
+      code: error.code,
+      message: error.message
+    });
+
+    delivery = {
+      deliveryMethod: "DEV_FALLBACK",
+      fallback: true
+    };
+  }
 
   console.log("[auth.service] OTP generated", {
     purpose,
@@ -482,7 +514,9 @@ async function requestOtp({ purpose, channel, target }) {
     channel,
     target: maskTarget(channel, normalizedTarget),
     deliveryMethod: delivery.deliveryMethod,
-    message: `Prosperous Data Hub Confirmation sent via ${delivery.deliveryMethod}`
+    message: delivery.fallback
+      ? "SMS temporarily unavailable. Use Dev OTP below in non-production environments."
+      : `Prosperous Data Hub Confirmation sent via ${delivery.deliveryMethod}`
   };
 
   if (env.NODE_ENV !== "production") {
