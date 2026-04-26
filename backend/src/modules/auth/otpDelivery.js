@@ -147,7 +147,8 @@ async function sendHubtelSmsOtp({ code, target, purpose }) {
       console.error("[otpDelivery] Hubtel SMS failed", {
         status: response.status,
         to,
-        response: data
+        response: data,
+        requestUrl: env.HUBTEL_SMS_BASE_URL
       });
 
       throw new ApiError(
@@ -176,7 +177,9 @@ async function sendHubtelSmsOtp({ code, target, purpose }) {
     console.error("[otpDelivery] Hubtel SMS error", {
       message: error.message,
       to,
-      code: error.code
+      code: error.code,
+      responseStatus: error.response?.status,
+      response: error.response?.data
     });
 
     throw new ApiError(
