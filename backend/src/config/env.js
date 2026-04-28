@@ -30,6 +30,8 @@ const envSchema = z
   TWILIO_ACCOUNT_SID: z.string().optional(),
   TWILIO_AUTH_TOKEN: z.string().optional(),
   TWILIO_WHATSAPP_FROM: z.string().optional(),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_TOKENINFO_URL: z.string().url().default("https://oauth2.googleapis.com/tokeninfo"),
   PAYMENT_PROVIDER: z.enum(["SIMULATED", "MTN", "HUBTEL", "EXPRESSPAY"]).default("SIMULATED"),
   MTN_ENV: z.enum(["sandbox", "production"]).default("sandbox"),
   MTN_BASE_URL: z.string().url().optional(),

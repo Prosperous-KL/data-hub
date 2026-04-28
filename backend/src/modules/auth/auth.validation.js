@@ -73,7 +73,13 @@ const otpRequestSchema = z.object({
 const passwordRecoveryRequestSchema = z.object({
   body: z.object({
     identifier: z.string().min(4),
-    channel: z.enum(["EMAIL", "PHONE"]).optional()
+    channel: z.enum(["EMAIL", "PHONE", "WHATSAPP", "SOCIAL"]).optional()
+  })
+});
+
+const socialGoogleRecoveryRequestSchema = z.object({
+  body: z.object({
+    idToken: z.string().min(20, "Google ID token is required")
   })
 });
 
@@ -120,6 +126,7 @@ module.exports = {
   loginSchema,
   otpRequestSchema,
   passwordRecoveryRequestSchema,
+  socialGoogleRecoveryRequestSchema,
   passwordResetSchema,
   deleteAccountSchema,
   updateUsernameSchema,

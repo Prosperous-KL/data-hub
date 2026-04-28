@@ -6,6 +6,7 @@ const pool = require("../../db/pool");
 const env = require("../../config/env");
 const ApiError = require("../../utils/apiError");
 const { sendAuthOtp } = require("./otpDelivery");
+const { verifyGoogleIdToken } = require("./social.provider");
 
 const memoryUsers = [];
 const memoryOtps = [];
@@ -645,6 +646,28 @@ async function requestPasswordRecoveryOtp({ identifier, channel }) {
   });
 }
 
+async function requestGoogleSocialRecoveryOtp({ idToken }) {
+  const social = await verifyGoogleIdToken(idToken);
+
+  const otpResult = await requestOtp({
+    purpose: "PASSWORD_RESET",
+    channel: "EMAIL",
+    target: social.email
+  });
+
+  return {
+    ...otpResult,
+    social: {
+      provider: social.provider,
+      email: social.email,
+      name: social.name,
+      picture: social.picture
+    },
+    message:
+      otpResult.message || "Google account verified. Confirmation code sent to your verified email."
+  };
+}
+
 async function resetPasswordWithOtp({ identifier, otpSessionId, otpCode, newPassword }) {
   const channel = detectChannelFromIdentifier(identifier);
   const target = normalizeTarget(channel, identifier);
@@ -984,6 +1007,7 @@ module.exports = {
   login,
   requestOtp,
   requestPasswordRecoveryOtp,
+  requestGoogleSocialRecoveryOtp,
   resetPasswordWithOtp,
   deleteAccount,
   checkUsernameAvailability,

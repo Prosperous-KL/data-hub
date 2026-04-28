@@ -6,6 +6,7 @@ const {
   loginSchema,
   otpRequestSchema,
   passwordRecoveryRequestSchema,
+  socialGoogleRecoveryRequestSchema,
   passwordResetSchema,
   deleteAccountSchema,
   updateUsernameSchema,
@@ -65,6 +66,19 @@ router.post("/password-recovery/request", validate(passwordRecoveryRequestSchema
     return next(error);
   }
 });
+
+router.post(
+  "/social/google/recovery/request",
+  validate(socialGoogleRecoveryRequestSchema),
+  async (req, res, next) => {
+    try {
+      const result = await authService.requestGoogleSocialRecoveryOtp(req.validated.body);
+      return res.status(201).json({ success: true, ...result });
+    } catch (error) {
+      return next(error);
+    }
+  }
+);
 
 router.post("/password-recovery/reset", validate(passwordResetSchema), async (req, res, next) => {
   try {
