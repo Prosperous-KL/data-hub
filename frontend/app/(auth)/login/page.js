@@ -73,8 +73,8 @@ export default function LoginPage() {
             </h1>
             <div className="mt-3">
               <Image
-                src="/logo.jpg"
-                alt="Prosperous TechPro logo"
+                src="/ProsperousLogo.png"
+                alt="Prosperous Data Hub logo"
                 width={120}
                 height={120}
                 className="rounded-xl border border-slate-200 object-cover"

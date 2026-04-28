@@ -6,7 +6,22 @@ const body = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "
 
 export const metadata = {
   title: "Prosperous Data Hub",
-  description: "Ghana VTU internet data bundle platform"
+  description: "Ghana VTU internet data bundle platform",
+  icons: {
+    icon: "/ProsperousLogo.png",
+    apple: "/ProsperousLogo.png"
+  },
+  openGraph: {
+    title: "Prosperous Data Hub",
+    description: "Ghana VTU internet data bundle platform",
+    images: ["/ProsperousLogo.png"]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Prosperous Data Hub",
+    description: "Ghana VTU internet data bundle platform",
+    images: ["/ProsperousLogo.png"]
+  }
 };
 
 export default function RootLayout({ children }) {

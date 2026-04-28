@@ -32,8 +32,8 @@ export default function AppShell({ children }) {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <Image
-              src="/logo.jpg"
-              alt="Prosperous TechPro logo"
+              src="/ProsperousLogo.png"
+              alt="Prosperous Data Hub logo"
               width={56}
               height={56}
               className="rounded-lg border border-slate-200 object-cover"
