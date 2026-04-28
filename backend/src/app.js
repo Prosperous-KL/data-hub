@@ -13,6 +13,7 @@ const vtuRoutes = require("./modules/vtu/vtu.routes");
 const adminRoutes = require("./modules/admin/admin.routes");
 
 const app = express();
+app.set("trust proxy", 1);
 const configuredOrigins = (env.CORS_ORIGIN || "")
   .split(",")
   .map((origin) => origin.trim())
