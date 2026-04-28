@@ -17,7 +17,7 @@ async function setupDB() {
 		throw new Error("DATABASE_URL is not set in backend/.env");
 	}
 
-	const schemaPath = path.join(__dirname, "..", "database", "schema.sql");
+	const schemaPath = path.join(__dirname, "database", "schema.sql");
 	const schema = await fs.readFile(schemaPath, "utf8");
 
 	const client = new Client({
