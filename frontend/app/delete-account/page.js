@@ -155,13 +155,15 @@ export default function DeleteAccountPage() {
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-2">Enter OTP</label>
                 <input
+                  name="deleteOtp"
+                  id="deleteOtp"
                   className="input"
                   type="text"
-                  placeholder="Enter P123456 code"
+                  placeholder="Enter 6-digit code"
                   value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7))}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
                   disabled={loading}
-                  maxLength={7}
+                  maxLength={6}
                 />
                 {devOtp && <p className="mt-1 text-xs text-slate-500">Dev OTP: {devOtp}</p>}
               </div>
@@ -184,6 +186,8 @@ export default function DeleteAccountPage() {
                   Type "{confirmRequired}" to confirm
                 </label>
                 <input
+                  name="confirmDelete"
+                  id="confirmDelete"
                   className="input"
                   type="text"
                   placeholder={confirmRequired}

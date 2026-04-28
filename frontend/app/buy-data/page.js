@@ -118,6 +118,8 @@ export default function BuyDataPage() {
                   Recipient number
                 </label>
                 <input
+                  name="recipientPhone"
+                  id="recipientPhone"
                   className="input"
                   type="text"
                   placeholder="Recipient phone number"
@@ -132,6 +134,8 @@ export default function BuyDataPage() {
                   Payment number
                 </label>
                 <input
+                  name="paymentMomo"
+                  id="paymentMomo"
                   className="input"
                   type="text"
                   placeholder="MoMo number to pay from"

@@ -63,6 +63,8 @@ export default function WalletFundingPage() {
 
           <form onSubmit={onSubmit} className="mt-4 space-y-3">
             <input
+              name="amount"
+              id="amount"
               className="input"
               type="number"
               min="1"
@@ -87,6 +89,16 @@ export default function WalletFundingPage() {
               onChange={(event) => setForm({ ...form, momoNumber: event.target.value })}
               required
             />
+              <input
+                name="momoNumber"
+                id="momoNumber"
+                className="input"
+                type="text"
+                placeholder="Number that will pay (MoMo)"
+                value={form.momoNumber}
+                onChange={(event) => setForm({ ...form, momoNumber: event.target.value })}
+                required
+              />
 
             <button type="submit" disabled={loading} className="btn-primary w-full">
               {loading ? "Initiating..." : "Send Mobile Money Prompt"}

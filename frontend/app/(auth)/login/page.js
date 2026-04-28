@@ -91,6 +91,8 @@ export default function LoginPage() {
               <div>
                 <label className="mb-1.5 block text-sm font-semibold text-slate-700">Email address</label>
                 <input
+                  name="email"
+                  id="login-email"
                   className="input"
                   type="email"
                   placeholder="you@example.com"

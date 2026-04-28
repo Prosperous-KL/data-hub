@@ -137,6 +137,18 @@ export default function AccountRecoveryPage() {
                     onChange={(e) => setIdentifier(e.target.value)}
                     disabled={loading}
                   />
+                  <div>
+                    <input
+                      name="identifier"
+                      id="identifier"
+                      className="input"
+                      type="text"
+                      placeholder={channel === "EMAIL" ? "Enter your email" : "Enter your phone number"}
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      disabled={loading}
+                    />
+                  </div>
                 </div>
 
                 <button
@@ -172,6 +184,19 @@ export default function AccountRecoveryPage() {
                     maxLength="7"
                     disabled={loading}
                   />
+                  <div>
+                    <input
+                      name="recoveryOtp"
+                      id="recoveryOtp"
+                      className="input text-center"
+                      type="text"
+                      placeholder="Enter 6-digit code"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
+                      maxLength="6"
+                      disabled={loading}
+                    />
+                  </div>
                 </div>
 
                 <button

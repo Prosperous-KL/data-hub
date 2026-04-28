@@ -141,6 +141,8 @@ export default function RegisterVerifyPage() {
 
         <div className="mt-4 space-y-3">
           <input
+            name="otp"
+            id="otp"
             className="input"
             type="text"
             placeholder="Enter 6-digit code"

@@ -81,6 +81,8 @@ export default function AdminPage() {
             <h3 className="text-sm font-semibold text-slate-700">Manual Refund</h3>
             <form onSubmit={submitRefund} className="mt-3 grid gap-2 sm:grid-cols-3">
               <input
+                name="transactionId"
+                id="transactionId"
                 className="input sm:col-span-1"
                 placeholder="Transaction ID"
                 value={refundForm.transactionId}
@@ -88,6 +90,8 @@ export default function AdminPage() {
                 required
               />
               <input
+                name="reason"
+                id="reason"
                 className="input sm:col-span-1"
                 placeholder="Reason"
                 value={refundForm.reason}

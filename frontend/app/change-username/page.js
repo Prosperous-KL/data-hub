@@ -201,6 +201,8 @@ export default function ChangeUsernamePage() {
                 </label>
                 <div className="relative">
                   <input
+                    name="username"
+                    id="username"
                     className={`input ${
                       usernameStatus === "available" ? "border-emerald-300 bg-emerald-50" : ""
                     } ${
@@ -244,6 +246,8 @@ export default function ChangeUsernamePage() {
                   <span className="ml-1 text-red-500">*</span>
                 </label>
                 <input
+                  name="fullName"
+                  id="fullName"
                   className="input"
                   type="text"
                   placeholder="Your Full Name"
