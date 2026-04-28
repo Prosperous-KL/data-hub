@@ -58,9 +58,9 @@ export default function RegisterPage() {
         <ErrorAlert message={error} />
 
         <div className="mt-4 space-y-3">
-          <input className="input" type="text" placeholder="Full name" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} required />
-          <input className="input" type="email" placeholder="Gmail address" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required />
-          <input className="input" type="text" placeholder="Phone number" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} required />
+          <input name="fullName" id="fullName" className="input" type="text" placeholder="Full name" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} required />
+          <input name="email" id="email" className="input" type="email" placeholder="Gmail address" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required />
+          <input name="phone" id="phone" className="input" type="text" placeholder="Phone number" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} required />
           <PasswordField
             placeholder="Password"
             value={form.password}
