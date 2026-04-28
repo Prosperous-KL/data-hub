@@ -91,7 +91,7 @@ function maskTarget(channel, target) {
 }
 
 function buildOtpCode() {
-  return `P${String(randomInt(0, 1000000)).padStart(6, "0")}`;
+  return String(randomInt(100000, 999999)).padStart(6, "0");
 }
 
 async function generateUniqueUsername(baseUsername, excludeUserId = null) {

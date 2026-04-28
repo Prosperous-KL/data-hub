@@ -143,10 +143,10 @@ export default function RegisterVerifyPage() {
           <input
             className="input"
             type="text"
-            placeholder="Enter P123456 code"
+            placeholder="Enter 6-digit code"
             value={otpCode}
-            onChange={(event) => setOtpCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7))}
-            maxLength={7}
+            onChange={(event) => setOtpCode(event.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
+            maxLength={6}
             required
           />
 
