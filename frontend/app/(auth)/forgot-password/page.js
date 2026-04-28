@@ -86,19 +86,27 @@ export default function ForgotPasswordPage() {
         <div className="mt-4 space-y-3">
           <div className="flex gap-3 text-sm">
             <label className="flex items-center gap-1">
-              <input type="radio" checked={channel === "EMAIL"} onChange={() => setChannel("EMAIL")} />
+              <input type="radio" name="recover-channel" checked={channel === "EMAIL"} onChange={() => setChannel("EMAIL")} />
               Email
             </label>
             <label className="flex items-center gap-1">
-              <input type="radio" checked={channel === "PHONE"} onChange={() => setChannel("PHONE")} />
+              <input type="radio" name="recover-channel" checked={channel === "PHONE"} onChange={() => setChannel("PHONE")} />
               Phone
+            </label>
+            <label className="flex items-center gap-1">
+              <input type="radio" name="recover-channel" checked={channel === "WHATSAPP"} onChange={() => setChannel("WHATSAPP")} />
+              WhatsApp
+            </label>
+            <label className="flex items-center gap-1">
+              <input type="radio" name="recover-channel" checked={channel === "SOCIAL"} onChange={() => setChannel("SOCIAL")} />
+              Social
             </label>
           </div>
 
           <input
             className="input"
             type={channel === "EMAIL" ? "email" : "text"}
-            placeholder={channel === "EMAIL" ? "you@example.com" : "Phone number"}
+            placeholder={channel === "EMAIL" ? "you@example.com" : "Phone number or social identifier"}
             value={identifier}
             onChange={(event) => setIdentifier(event.target.value)}
             required
@@ -111,10 +119,10 @@ export default function ForgotPasswordPage() {
           <input
             className="input"
             type="text"
-            placeholder="OTP code"
+            placeholder="Enter 6-digit code"
             value={otpCode}
-            onChange={(event) => setOtpCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7))}
-            maxLength={7}
+            onChange={(event) => setOtpCode(event.target.value.replace(/[^0-9]/g, "").slice(0, 6))}
+            maxLength={6}
             required
           />
 

@@ -27,6 +27,9 @@ const envSchema = z
   HUBTEL_SMS_CLIENT_ID: z.string().optional(),
   HUBTEL_SMS_CLIENT_SECRET: z.string().optional(),
   HUBTEL_SMS_FROM: z.string().optional(),
+  TWILIO_ACCOUNT_SID: z.string().optional(),
+  TWILIO_AUTH_TOKEN: z.string().optional(),
+  TWILIO_WHATSAPP_FROM: z.string().optional(),
   PAYMENT_PROVIDER: z.enum(["SIMULATED", "MTN", "HUBTEL", "EXPRESSPAY"]).default("SIMULATED"),
   MTN_ENV: z.enum(["sandbox", "production"]).default("sandbox"),
   MTN_BASE_URL: z.string().url().optional(),
@@ -136,6 +139,21 @@ const envSchema = z
           path: ["HUBTEL_SMS_FROM"],
           message: "HUBTEL_SMS_FROM is required when Hubtel SMS delivery is configured"
         });
+      }
+    }
+
+    // If Twilio WhatsApp vars are partially set, require them together
+    if (env.TWILIO_ACCOUNT_SID || env.TWILIO_AUTH_TOKEN || env.TWILIO_WHATSAPP_FROM) {
+      if (!env.TWILIO_ACCOUNT_SID) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["TWILIO_ACCOUNT_SID"], message: "TWILIO_ACCOUNT_SID is required when Twilio WhatsApp is configured" });
+      }
+
+      if (!env.TWILIO_AUTH_TOKEN) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["TWILIO_AUTH_TOKEN"], message: "TWILIO_AUTH_TOKEN is required when Twilio WhatsApp is configured" });
+      }
+
+      if (!env.TWILIO_WHATSAPP_FROM) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["TWILIO_WHATSAPP_FROM"], message: "TWILIO_WHATSAPP_FROM is required when Twilio WhatsApp is configured" });
       }
     }
 

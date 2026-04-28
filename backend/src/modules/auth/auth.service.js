@@ -218,9 +218,14 @@ function shouldUseDevOtpDeliveryFallback(error) {
 
   // Allow SMS fallback for any SMS delivery error (unavailable, failed, not configured)
   // This ensures system functionality when SMS provider is unavailable or misconfigured
-  return ["SMS_DELIVERY_FAILED", "SMS_PROVIDER_ERROR", "SMS_DELIVERY_NOT_CONFIGURED"].includes(
-    error.code
-  );
+  return [
+    "SMS_DELIVERY_FAILED",
+    "SMS_PROVIDER_ERROR",
+    "SMS_DELIVERY_NOT_CONFIGURED",
+    "WHATSAPP_DELIVERY_FAILED",
+    "WHATSAPP_PROVIDER_ERROR",
+    "WHATSAPP_DELIVERY_NOT_CONFIGURED"
+  ].includes(error.code);
 }
 
 function logMemoryFallbackOnce(error) {

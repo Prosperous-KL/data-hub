@@ -3,6 +3,8 @@ const nodemailer = require("nodemailer");
 const env = require("../../config/env");
 const ApiError = require("../../utils/apiError");
 
+const qs = require("querystring");
+
 let gmailTransporter = null;
 
 function buildConfirmationText(code, purpose) {
@@ -66,7 +68,7 @@ function normalizeHubtelPhoneNumber(phoneNumber) {
         "INVALID_SMS_TARGET"
       );
     }
-    return normalized;
+    return withoutPlus;
   }
 
   // 233 prefix (Ghana country code without +)
@@ -78,7 +80,7 @@ function normalizeHubtelPhoneNumber(phoneNumber) {
         "INVALID_SMS_TARGET"
       );
     }
-    return `+${normalized}`;
+    return normalized;
   }
 
   // 0 prefix (local Ghana format)
@@ -90,7 +92,7 @@ function normalizeHubtelPhoneNumber(phoneNumber) {
         "INVALID_SMS_TARGET"
       );
     }
-    return `+233${normalized.slice(1)}`;
+    return `233${normalized.slice(1)}`;
   }
 
   // No recognized prefix
@@ -191,6 +193,60 @@ async function sendHubtelSmsOtp({ code, target, purpose }) {
   }
 }
 
+async function sendWhatsAppOtp({ code, target, purpose }) {
+  // Uses Twilio Programmable Messaging for WhatsApp. Requires TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM
+  const sid = env.TWILIO_ACCOUNT_SID;
+  const token = env.TWILIO_AUTH_TOKEN;
+  const from = env.TWILIO_WHATSAPP_FROM;
+
+  if (!sid || !token || !from) {
+    throw new ApiError(500, "WhatsApp delivery is not configured", "WHATSAPP_DELIVERY_NOT_CONFIGURED");
+  }
+
+  // Normalize to international numeric without + (Twilio accepts + but we'll send E.164 with +)
+  const normalized = String(target || "").replace(/[\s-().]/g, "").trim();
+  let toNumber = normalized;
+  if (toNumber.startsWith("0")) {
+    toNumber = `+233${toNumber.slice(1)}`;
+  } else if (!toNumber.startsWith("+") && !toNumber.startsWith("233")) {
+    toNumber = `+${toNumber}`;
+  }
+
+  const body = buildConfirmationText(code, purpose);
+
+  try {
+    const url = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`;
+    const payload = qs.stringify({
+      From: `whatsapp:${from}`,
+      To: `whatsapp:${toNumber}`,
+      Body: body
+    });
+
+    const response = await axios.post(url, payload, {
+      timeout: 15000,
+      auth: { username: sid, password: token },
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      validateStatus: () => true
+    });
+
+    const data = response.data || {};
+    const ok = response.status >= 200 && response.status < 300;
+
+    if (!ok) {
+      console.error("[otpDelivery] Twilio WhatsApp failed", { status: response.status, to: toNumber, response: data });
+      throw new ApiError(502, data.message || data.error || "Failed to send WhatsApp message", "WHATSAPP_DELIVERY_FAILED", data);
+    }
+
+    console.log("[otpDelivery] WhatsApp message sent", { to: toNumber, sid: data.sid });
+
+    return { deliveryMethod: "WhatsApp", provider: "Twilio", messageId: data.sid };
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    console.error("[otpDelivery] WhatsApp error", { message: error.message, to: target, code: error.code, response: error.response?.data });
+    throw new ApiError(502, "Failed to send WhatsApp message", "WHATSAPP_PROVIDER_ERROR", { originalError: error.message });
+  }
+}
+
 async function sendAuthOtp({ code, channel, target, purpose }) {
   if (channel === "EMAIL") {
     return sendGmailOtp({ code, target, purpose });
@@ -198,6 +254,19 @@ async function sendAuthOtp({ code, channel, target, purpose }) {
 
   if (channel === "PHONE") {
     return sendHubtelSmsOtp({ code, target, purpose });
+  }
+
+  if (channel === "WHATSAPP") {
+    return sendWhatsAppOtp({ code, target, purpose });
+  }
+
+  if (channel === "SOCIAL") {
+    // SOCIAL is a special channel: frontend should perform OAuth and provide proof of ownership.
+    // Here we simply return a placeholder indicating social verification should proceed.
+    return {
+      deliveryMethod: "SOCIAL",
+      message: "Complete social provider verification in the client (OAuth flow)"
+    };
   }
 
   throw new ApiError(400, "Unsupported OTP delivery channel", "INVALID_OTP_CHANNEL");

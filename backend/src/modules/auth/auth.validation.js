@@ -1,6 +1,6 @@
 const { z } = require("zod");
 
-const otpCodeSchema = z.string().regex(/^P\d{6}$/, "OTP code must start with P followed by 6 digits");
+const otpCodeSchema = z.string().regex(/^\d{6}$/, "OTP code must be 6 digits");
 const ghPhoneRegex = /^(?:\+233|233|0)(?:2[03456789]|5\d)\d{7}$/;
 
 function normalizePhoneInput(value) {
@@ -32,24 +32,41 @@ const loginSchema = z.object({
 const otpRequestSchema = z.object({
   body: z.object({
     purpose: z.enum(["REGISTER", "PASSWORD_RESET", "ACCOUNT_DELETE"]),
-    channel: z.enum(["EMAIL", "PHONE"]),
+    channel: z.enum(["EMAIL", "PHONE", "WHATSAPP", "SOCIAL"]),
     target: z.string().min(4)
   }).superRefine((value, ctx) => {
-    if (value.purpose === "REGISTER" && value.channel !== "PHONE") {
+    // For registration, require a phone-capable channel (PHONE or WHATSAPP)
+    if (value.purpose === "REGISTER" && !["PHONE", "WHATSAPP"].includes(value.channel)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Registration OTP must use phone verification",
+        message: "Registration OTP must use phone or WhatsApp verification",
         path: ["channel"]
       });
     }
 
-    if (value.channel === "PHONE" && !isValidGhanaPhone(value.target)) {
+    // If channel is PHONE or WHATSAPP, validate Ghana phone number format
+    if (["PHONE", "WHATSAPP"].includes(value.channel) && !isValidGhanaPhone(value.target)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Target must be a valid Ghana phone number",
         path: ["target"]
       });
     }
+
+    // If channel is EMAIL, basic email shape is required
+    if (value.channel === "EMAIL") {
+      try {
+        z.string().email().parse(value.target);
+      } catch (e) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Target must be a valid email address",
+          path: ["target"]
+        });
+      }
+    }
+
+    // If channel is SOCIAL, frontend should supply a provider token; acceptance is validated elsewhere
   })
 });
 

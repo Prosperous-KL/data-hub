@@ -30,25 +30,25 @@ describe("Auth OTP flow", () => {
     sendAuthOtp.mockClear();
   });
 
-  it("generates a P-prefixed OTP and brands the delivery message", async () => {
+  it("generates a 6-digit OTP and brands the delivery message", async () => {
     const response = await authService.requestPasswordRecoveryOtp({
       identifier: "user@example.com",
       channel: "EMAIL"
     });
 
-    expect(response.devOtp).toMatch(/^P\d{6}$/);
+    expect(response.devOtp).toMatch(/^\d{6}$/);
     expect(response.deliveryMethod).toBe("Gmail");
     expect(response.message).toBe("Prosperous Data Hub Confirmation sent via Gmail");
     expect(pool.query).toHaveBeenCalled();
     expect(sendAuthOtp).toHaveBeenCalledTimes(1);
   });
 
-  it("accepts the P-prefixed code in validation", () => {
+  it("accepts the 6-digit code in validation", () => {
     const result = passwordResetSchema.safeParse({
       body: {
         identifier: "user@example.com",
         otpSessionId: "550e8400-e29b-41d4-a716-446655440000",
-        otpCode: "P123456",
+        otpCode: "123456",
         newPassword: "Password123!"
       }
     });

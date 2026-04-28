@@ -55,7 +55,8 @@ export default function RegisterVerifyPage() {
       return;
     }
 
-    void requestOtp(pending.phone);
+    const ch = pending.channel || "PHONE";
+    void requestOtp(pending.phone, ch);
   }, [pending, otpSessionId]);
 
   async function requestOtp(phone) {
@@ -67,7 +68,7 @@ export default function RegisterVerifyPage() {
         method: "POST",
         body: {
           purpose: "REGISTER",
-          channel: "PHONE",
+          channel: arguments[1] || "PHONE",
           target: phone
         }
       });
