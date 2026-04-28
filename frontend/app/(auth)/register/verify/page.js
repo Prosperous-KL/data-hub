@@ -162,7 +162,11 @@ export default function RegisterVerifyPage() {
           {devOtp && <p className="text-xs text-slate-500">Dev OTP: {devOtp}</p>}
         </div>
 
-        <button disabled={loading || !otpSessionId} className="btn-primary mt-4 w-full" type="submit">
+        <button
+          disabled={loading || (!otpSessionId && !devOtp)}
+          className="btn-primary mt-4 w-full"
+          type="submit"
+        >
           {loading ? "Creating account..." : "Verify and create account"}
         </button>
 
