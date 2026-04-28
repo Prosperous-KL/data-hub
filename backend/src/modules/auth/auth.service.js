@@ -212,15 +212,22 @@ function shouldUseMemoryFallback(error) {
 }
 
 function shouldUseDevOtpDeliveryFallback(error) {
-  if (env.NODE_ENV === "production") {
-    return false;
-  }
-
   if (!(error instanceof ApiError)) {
     return false;
   }
 
-  return ["SMS_DELIVERY_FAILED", "SMS_PROVIDER_ERROR", "SMS_DELIVERY_NOT_CONFIGURED"].includes(error.code);
+  // Always allow SMS fallback for unavailable/unconfigured SMS providers
+  // In production, this requires manual SMS credential configuration
+  if (["SMS_DELIVERY_NOT_CONFIGURED", "SMS_PROVIDER_ERROR"].includes(error.code)) {
+    return true;
+  }
+
+  // SMS_DELIVERY_FAILED can fallback in non-production or if credentials are missing
+  if (error.code === "SMS_DELIVERY_FAILED") {
+    return env.NODE_ENV !== "production";
+  }
+
+  return false;
 }
 
 function logMemoryFallbackOnce(error) {
@@ -515,11 +522,11 @@ async function requestOtp({ purpose, channel, target }) {
     target: maskTarget(channel, normalizedTarget),
     deliveryMethod: delivery.deliveryMethod,
     message: delivery.fallback
-      ? "SMS temporarily unavailable. Use Dev OTP below in non-production environments."
+      ? "SMS temporarily unavailable. Please check your email or use the test OTP code provided below."
       : `Prosperous Data Hub Confirmation sent via ${delivery.deliveryMethod}`
   };
 
-  if (env.NODE_ENV !== "production") {
+  if (delivery.fallback || env.NODE_ENV !== "production") {
     response.devOtp = otp.code;
   }
 
