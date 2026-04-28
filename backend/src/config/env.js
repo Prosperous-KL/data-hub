@@ -70,14 +70,6 @@ const envSchema = z
         });
       }
 
-      if (!env.HUBTEL_SIGNING_SECRET) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["HUBTEL_SIGNING_SECRET"],
-          message: "HUBTEL_SIGNING_SECRET is required when PAYMENT_PROVIDER=HUBTEL"
-        });
-      }
-
       if (!env.HUBTEL_BASE_URL) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

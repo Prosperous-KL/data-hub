@@ -7,19 +7,14 @@ services:
     startCommand: npm start
     healthCheckPath: /health
     envVars:
-      # Production environment
       - key: NODE_ENV
         value: production
       - key: PORT
         value: "4000"
-      
-      # Public/default values (user must update JWT_SECRET and DATABASE_URL in Render dashboard)
       - key: JWT_EXPIRES_IN
         value: "7d"
       - key: CORS_ORIGIN
         value: "http://localhost:3000,https://data-hub-1-m4o4.onrender.com,https://data-hub-6kwj.onrender.com"
-      - key: APP_BASE_URL
-        value: "https://data-hub-6kwj.onrender.com"
       - key: PAYMENT_PROVIDER
         value: "SIMULATED"
       - key: PAYMENT_CALLBACK_PROVIDER
