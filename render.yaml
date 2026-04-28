@@ -1,48 +1,76 @@
 services:
-  - type: web_service
-    name: data-hub-backend
-    env: node
-    plan: free
-    root: backend
-    buildCommand: npm install
-    startCommand: npm start
-    envVars:
-      - key: CORS_ORIGIN
-        value: "http://localhost:3000,https://data-hub-1-m4o4.onrender.com,https://data-hub-6kwj.onrender.com"
-services:
   - type: web
     name: data-hub-backend
     runtime: node
     rootDir: backend
     buildCommand: npm install
-    startCommand: npm run vtu:start
+    startCommand: npm start
     healthCheckPath: /health
     envVars:
+      # Production environment
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
+        value: "4000"
+
+      # Database (REQUIRED - set in Render dashboard)
       - key: DATABASE_URL
         sync: false
+
+      # JWT/Auth (REQUIRED - set in Render dashboard)
       - key: JWT_SECRET
         sync: false
       - key: JWT_EXPIRES_IN
-        value: 7d
+        value: "7d"
+
+      # CORS
       - key: CORS_ORIGIN
-        value: http://localhost:3000,https://data-hub-1-m4o4.onrender.com,https://data-hub-6kwj.onrender.com,https://*.onrender.com
+        value: "http://localhost:3000,https://data-hub-1-m4o4.onrender.com,https://data-hub-6kwj.onrender.com"
       - key: APP_BASE_URL
-        value: https://data-hub-6kwj.onrender.com
+        value: "https://data-hub-6kwj.onrender.com"
+
+      # Hubtel Payment (REQUIRED - set in Render dashboard)
       - key: PAYMENT_PROVIDER
-        value: SIMULATED
+        value: "HUBTEL"
+      - key: HUBTEL_CLIENT_ID
+        sync: false
+      - key: HUBTEL_CLIENT_SECRET
+        sync: false
+      - key: HUBTEL_BASE_URL
+        value: "https://api.hubtel.com"
       - key: PAYMENT_CALLBACK_TOKEN
         sync: false
       - key: PAYMENT_CALLBACK_PROVIDER
-        value: AUTO
+        value: "AUTO"
+
+      # Hubtel SMS (REQUIRED - set in Render dashboard)
+      - key: HUBTEL_SMS_BASE_URL
+        value: "https://smsc.hubtel.com/v1/messages/send"
+      - key: HUBTEL_SMS_CLIENT_ID
+        sync: false
+      - key: HUBTEL_SMS_CLIENT_SECRET
+        sync: false
+      - key: HUBTEL_SMS_FROM
+        value: "Prosperous"
+
+      # VTU
       - key: VTU_PROVIDER
-        value: REAL
+        value: "REAL"
       - key: VTU_API_KEY
         sync: false
       - key: VTU_BASE_URL
         sync: false
+      - key: VTU_SIMULATE_FAILURE_SUFFIX
+        value: ""
+
+      # Email/SMTP (REQUIRED - set in Render dashboard)
+      - key: SMTP_GMAIL_USER
+        sync: false
+      - key: SMTP_GMAIL_APP_PASSWORD
+        sync: false
+      - key: SMTP_FROM_NAME
+        value: "Prosperous Data Hub"
+
+      # Admin
       - key: ADMIN_EMAIL
         sync: false
