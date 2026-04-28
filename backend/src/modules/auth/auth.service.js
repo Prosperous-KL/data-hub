@@ -514,6 +514,13 @@ async function requestOtp({ purpose, channel, target }) {
     target: maskTarget(channel, normalizedTarget)
   });
 
+  const fallbackMessages = {
+    PHONE: "SMS temporarily unavailable. Please check your email or use the test OTP code provided below.",
+    WHATSAPP: "WhatsApp temporarily unavailable. Please check your email or use the test OTP code provided below.",
+    EMAIL: "Email temporarily unavailable. Please use the test OTP code provided below.",
+    SOCIAL: "Social recovery temporarily unavailable. Please use the test OTP code provided below."
+  };
+
   const response = {
     otpSessionId: otp.otpSessionId,
     expiresInSeconds: otp.expiresInSeconds,
@@ -521,7 +528,7 @@ async function requestOtp({ purpose, channel, target }) {
     target: maskTarget(channel, normalizedTarget),
     deliveryMethod: delivery.deliveryMethod,
     message: delivery.fallback
-      ? "SMS temporarily unavailable. Please check your email or use the test OTP code provided below."
+      ? fallbackMessages[channel] || "Delivery temporarily unavailable. Please use the test OTP code provided below."
       : `Prosperous Data Hub Confirmation sent via ${delivery.deliveryMethod}`
   };
 
