@@ -216,18 +216,11 @@ function shouldUseDevOtpDeliveryFallback(error) {
     return false;
   }
 
-  // Always allow SMS fallback for unavailable/unconfigured SMS providers
-  // In production, this requires manual SMS credential configuration
-  if (["SMS_DELIVERY_NOT_CONFIGURED", "SMS_PROVIDER_ERROR"].includes(error.code)) {
-    return true;
-  }
-
-  // SMS_DELIVERY_FAILED can fallback in non-production or if credentials are missing
-  if (error.code === "SMS_DELIVERY_FAILED") {
-    return env.NODE_ENV !== "production";
-  }
-
-  return false;
+  // Allow SMS fallback for any SMS delivery error (unavailable, failed, not configured)
+  // This ensures system functionality when SMS provider is unavailable or misconfigured
+  return ["SMS_DELIVERY_FAILED", "SMS_PROVIDER_ERROR", "SMS_DELIVERY_NOT_CONFIGURED"].includes(
+    error.code
+  );
 }
 
 function logMemoryFallbackOnce(error) {
