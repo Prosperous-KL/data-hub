@@ -13,8 +13,8 @@ const envSchema = z
   .object({
   PORT: z.coerce.number().default(4000),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  DATABASE_URL: z.string().min(1).optional().default("postgresql://localhost/datahubdb_placeholder"),
-  JWT_SECRET: z.string().min(1).default("change-me-render-placeholder-secret"),
+  DATABASE_URL: z.string().default("postgresql://localhost/datahubdb_placeholder"),
+  JWT_SECRET: z.string().default("change-me-render-placeholder-secret"),
   JWT_EXPIRES_IN: z.string().default("7d"),
   CORS_ORIGIN: z
     .string()
