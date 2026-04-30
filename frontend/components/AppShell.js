@@ -12,6 +12,7 @@ const links = [
   { href: "/buy-data", label: "Buy Data" },
   { href: "/wallet-funding", label: "Fund Wallet" },
   { href: "/transactions", label: "Transactions" },
+  { href: "/seller", label: "Seller" },
   { href: "/admin", label: "Admin" }
 ];
 
