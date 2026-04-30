@@ -105,6 +105,55 @@ CREATE TABLE IF NOT EXISTS data_purchases (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS store_products (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  seller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title VARCHAR(160) NOT NULL,
+  description TEXT,
+  price_cents INT NOT NULL CHECK (price_cents >= 0),
+  currency VARCHAR(10) NOT NULL DEFAULT 'GHS',
+  stock INT NOT NULL DEFAULT 0 CHECK (stock >= 0),
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS store_orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  seller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  order_ref VARCHAR(120) NOT NULL UNIQUE,
+  phone VARCHAR(25) NOT NULL,
+  product VARCHAR(160) NOT NULL,
+  paid_cents INT NOT NULL CHECK (paid_cents >= 0),
+  profit_cents INT NOT NULL DEFAULT 0 CHECK (profit_cents >= 0),
+  network VARCHAR(20) NOT NULL CHECK (network IN ('MTN', 'TELECEL', 'AIRTELTIGO')),
+  status VARCHAR(20) NOT NULL DEFAULT 'PAID' CHECK (status IN ('PAID', 'PENDING', 'FAILED', 'FULFILLED', 'CANCELLED')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS store_withdrawals (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  seller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  amount_cents INT NOT NULL CHECK (amount_cents >= 0),
+  network VARCHAR(20) NOT NULL CHECK (network IN ('MTN', 'TELECEL', 'AIRTELTIGO')),
+  momo_number VARCHAR(25) NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPROVED', 'PAID', 'FAILED', 'REJECTED')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS store_settings (
+  seller_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  shop_name VARCHAR(160) NOT NULL DEFAULT 'Prosperous Data Hub',
+  open BOOLEAN NOT NULL DEFAULT TRUE,
+  closed_notice TEXT NOT NULL DEFAULT '',
+  support_contact VARCHAR(50) NOT NULL DEFAULT '',
+  community_link TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_transactions_user_created
 ON transactions(user_id, created_at DESC);
 
@@ -125,6 +174,21 @@ ON data_purchases(user_id, created_at DESC);
 
 CREATE INDEX IF NOT EXISTS idx_data_purchases_status
 ON data_purchases(status);
+
+CREATE INDEX IF NOT EXISTS idx_store_products_seller_created
+ON store_products(seller_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_store_orders_seller_created
+ON store_orders(seller_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_store_orders_status
+ON store_orders(status);
+
+CREATE INDEX IF NOT EXISTS idx_store_withdrawals_seller_created
+ON store_withdrawals(seller_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_store_withdrawals_status
+ON store_withdrawals(status);
 
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
@@ -161,6 +225,30 @@ EXECUTE FUNCTION set_updated_at();
 DROP TRIGGER IF EXISTS trg_data_purchases_set_updated_at ON data_purchases;
 CREATE TRIGGER trg_data_purchases_set_updated_at
 BEFORE UPDATE ON data_purchases
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_store_products_set_updated_at ON store_products;
+CREATE TRIGGER trg_store_products_set_updated_at
+BEFORE UPDATE ON store_products
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_store_orders_set_updated_at ON store_orders;
+CREATE TRIGGER trg_store_orders_set_updated_at
+BEFORE UPDATE ON store_orders
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_store_withdrawals_set_updated_at ON store_withdrawals;
+CREATE TRIGGER trg_store_withdrawals_set_updated_at
+BEFORE UPDATE ON store_withdrawals
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+DROP TRIGGER IF EXISTS trg_store_settings_set_updated_at ON store_settings;
+CREATE TRIGGER trg_store_settings_set_updated_at
+BEFORE UPDATE ON store_settings
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
 
