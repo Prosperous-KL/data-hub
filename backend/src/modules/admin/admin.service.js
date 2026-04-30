@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require("uuid");
+const { randomUUID } = require("crypto");
 const pool = require("../../db/pool");
 const ApiError = require("../../utils/apiError");
 const walletService = require("../wallet/wallet.service");
@@ -134,7 +134,7 @@ async function manualRefund({ transactionId, reason, adminUserId }) {
       throw new ApiError(409, "Refund already exists for this transaction", "REFUND_EXISTS");
     }
 
-    const refundRef = `MREF-${uuidv4()}`;
+    const refundRef = `MREF-${randomUUID()}`;
 
     const refund = await walletService.creditWallet({
       userId: original.user_id,

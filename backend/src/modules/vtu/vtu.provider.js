@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { v4: uuidv4 } = require("uuid");
+const { randomUUID } = require("crypto");
 const env = require("../../config/env");
 
 function normalizeGhanaMsisdn(phoneNumber) {
@@ -30,7 +30,7 @@ async function sendDataBundle({ network, bundleCode, phoneNumber }) {
     return {
       success: true,
       message: "Data delivered",
-      providerReference: `VTU-${uuidv4()}`
+      providerReference: `VTU-${randomUUID()}`
     };
   }
 

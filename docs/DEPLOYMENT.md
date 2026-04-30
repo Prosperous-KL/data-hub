@@ -93,6 +93,10 @@ Common Render failure causes:
     - `NEXT_PUBLIC_API_URL=https://data-hub-6kwj.onrender.com`
 3. Deploy.
 
+Note: the frontend is intentionally kept on the stable Next.js 16.2.x line.
+It passes build and Playwright validation, but `npm audit` still reports a moderate upstream PostCSS advisory through Next's bundled dependency tree.
+This is an external package-chain issue rather than an application-code defect.
+
 ## 4) Environment Variables
 
 Backend `.env` required keys:

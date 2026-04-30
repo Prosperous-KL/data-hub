@@ -4,7 +4,7 @@ Production-ready fintech web platform for Ghana internet data bundles (VTU), inc
 
 ## Stack
 
-- Frontend: Next.js 14 + Tailwind CSS
+- Frontend: Next.js 16.2.x + Tailwind CSS
 - Backend: Node.js + Express (modular service architecture)
 - Database: PostgreSQL
 - Auth: JWT + bcrypt
@@ -128,6 +128,11 @@ curl -X POST http://localhost:4000/api/payment/callback \
 - Automatic refund writes independent credit transaction with audit metadata
 - Ledger keeps before/after wallet balances for each financial event
 - In simulated VTU mode, `VTU_SIMULATE_FAILURE_SUFFIX` can be set to force failures for matching recipient numbers during testing
+
+### Known Frontend Advisory
+
+The frontend is intentionally kept on the stable Next.js 16.2.x line because it passes build and E2E validation.
+`npm audit` still reports a moderate upstream PostCSS advisory through Next's bundled dependency tree, but the app remains functional and the issue is outside the project code itself.
 
 ## Automated Tests
 

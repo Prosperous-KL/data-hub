@@ -5,6 +5,7 @@ const heading = Space_Grotesk({ subsets: ["latin"], variable: "--font-heading" }
 const body = IBM_Plex_Sans({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body" });
 
 export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
   title: "Prosperous Data Hub",
   description: "Ghana VTU internet data bundle platform",
   icons: {

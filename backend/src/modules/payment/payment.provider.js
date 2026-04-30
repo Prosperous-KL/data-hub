@@ -1,5 +1,5 @@
 const axios = require("axios");
-const { v4: uuidv4 } = require("uuid");
+const { randomUUID } = require("crypto");
 const env = require("../../config/env");
 const { buildHubtelSignatureHeaders, buildExpressPaySignatureHeaders } = require("../../utils/paymentSignatures");
 const ApiError = require("../../utils/apiError");
@@ -47,7 +47,7 @@ async function initiateMomoCharge({ amount, momoNumber, provider, externalRefere
 
   if (env.PAYMENT_PROVIDER === "SIMULATED") {
     return {
-      providerReference: `SIM-${uuidv4()}`,
+      providerReference: `SIM-${randomUUID()}`,
       status: "PENDING",
       checkoutUrl: `${env.APP_BASE_URL}/mock-momo-approval/${externalReference}`
     };
@@ -73,7 +73,7 @@ async function initiateMomoCharge({ amount, momoNumber, provider, externalRefere
         throw new ApiError(502, "Failed to get MTN access token", "MTN_TOKEN_ERROR");
       }
 
-      const requestId = uuidv4();
+      const requestId = randomUUID();
 
       await axios.post(
         `${env.MTN_BASE_URL}/collection/v1_0/requesttopay`,

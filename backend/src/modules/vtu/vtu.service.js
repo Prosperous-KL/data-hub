@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require("uuid");
+const { randomUUID } = require("crypto");
 const pool = require("../../db/pool");
 const { withTransaction } = require("../../db/tx");
 const ApiError = require("../../utils/apiError");
@@ -66,7 +66,7 @@ async function buyData({ userId, network, bundleCode, phoneNumber, momoNumber, i
     };
   }
 
-  const reference = `VTU-${uuidv4()}`;
+  const reference = `VTU-${randomUUID()}`;
 
   const debit = await walletService.debitWallet({
     userId,

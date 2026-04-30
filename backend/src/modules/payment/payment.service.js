@@ -1,11 +1,11 @@
-const { v4: uuidv4 } = require("uuid");
+const { randomUUID } = require("crypto");
 const pool = require("../../db/pool");
 const { withTransaction } = require("../../db/tx");
 const ApiError = require("../../utils/apiError");
 const { initiateMomoCharge } = require("./payment.provider");
 
 async function initiatePayment({ userId, amount, momoNumber, provider, idempotencyKey }) {
-  const externalReference = `PAY-${uuidv4()}`;
+  const externalReference = `PAY-${randomUUID()}`;
 
   const providerResponse = await initiateMomoCharge({
     amount,
