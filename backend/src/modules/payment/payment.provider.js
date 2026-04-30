@@ -18,6 +18,30 @@ function normalizeGhanaMsisdn(phoneNumber) {
   return digits;
 }
 
+function resolveHubtelPaymentEndpoint(baseUrl) {
+  const defaultPath = "/charges/initiate";
+  const fallbackUrl = `https://api.hubtel.com${defaultPath}`;
+
+  try {
+    const parsed = new URL(baseUrl);
+    const pathname = parsed.pathname && parsed.pathname !== "/" ? parsed.pathname : defaultPath;
+
+    parsed.pathname = pathname;
+    parsed.search = "";
+    parsed.hash = "";
+
+    return {
+      url: parsed.toString(),
+      path: pathname
+    };
+  } catch (_error) {
+    return {
+      url: baseUrl || fallbackUrl,
+      path: defaultPath
+    };
+  }
+}
+
 async function initiateMomoCharge({ amount, momoNumber, provider, externalReference }) {
   const msisdn = normalizeGhanaMsisdn(momoNumber);
 
@@ -96,9 +120,9 @@ async function initiateMomoCharge({ amount, momoNumber, provider, externalRefere
         customerNumber: msisdn,
         clientReference: externalReference
       };
-      const path = "/momo/initiate";
+      const { url, path } = resolveHubtelPaymentEndpoint(env.HUBTEL_BASE_URL);
       const response = await axios.post(
-        `${env.HUBTEL_BASE_URL}${path}`,
+        url,
         body,
         {
           headers: {
