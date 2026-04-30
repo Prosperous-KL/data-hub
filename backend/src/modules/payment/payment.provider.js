@@ -121,6 +121,17 @@ async function initiateMomoCharge({ amount, momoNumber, provider, externalRefere
         clientReference: externalReference
       };
       const { url, path } = resolveHubtelPaymentEndpoint(env.HUBTEL_BASE_URL);
+      
+      console.log("[payment.provider] Hubtel request", {
+        url,
+        path,
+        body,
+        headers: {
+          "Content-Type": "application/json",
+          "X-Client-Secret": "***"
+        }
+      });
+      
       const response = await axios.post(
         url,
         body,
@@ -133,12 +144,24 @@ async function initiateMomoCharge({ amount, momoNumber, provider, externalRefere
         }
       );
 
+      console.log("[payment.provider] Hubtel response", {
+        status: response.status,
+        data: response.data
+      });
+
       return {
         providerReference: response.data.providerReference,
         status: "PENDING",
         checkoutUrl: response.data.checkoutUrl
       };
     } catch (error) {
+      console.error("[payment.provider] Hubtel error", {
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        data: error?.response?.data,
+        message: error?.message
+      });
+      
       const providerMessage =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
