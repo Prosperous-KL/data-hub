@@ -10,6 +10,7 @@ const walletRoutes = require("./modules/wallet/wallet.routes");
 const transactionRoutes = require("./modules/transaction/transaction.routes");
 const paymentRoutes = require("./modules/payment/payment.routes");
 const vtuRoutes = require("./modules/vtu/vtu.routes");
+const bundleRoutes = require("./modules/bundle/bundle.routes");
 const adminRoutes = require("./modules/admin/admin.routes");
 
 const app = express();
@@ -110,6 +111,7 @@ app.use("/api/wallet", walletRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/data", vtuRoutes);
+app.use("/api/bundles", bundleRoutes);
 app.use("/api/admin", adminRoutes);
 
 app.use(notFound);

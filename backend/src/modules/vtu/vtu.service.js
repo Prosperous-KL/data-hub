@@ -4,6 +4,7 @@ const { withTransaction } = require("../../db/tx");
 const ApiError = require("../../utils/apiError");
 const walletService = require("../wallet/wallet.service");
 const paymentService = require("../payment/payment.service");
+const bundleService = require("../bundle/bundle.service");
 const { DATA_BUNDLES } = require("../../utils/constants");
 const { sendDataBundle } = require("./vtu.provider");
 
@@ -37,14 +38,18 @@ function getBundle(network, bundleCode) {
 
 async function buyData({ userId, network, bundleCode, phoneNumber, momoNumber, idempotencyKey }) {
   const bundle = getBundle(network, bundleCode);
+  
+  // Get effective price (custom or default)
+  const effectivePrice = await bundleService.getEffectivePrice(userId, bundleCode, network);
+  const chargeAmount = Number(effectivePrice);
 
   const wallet = await walletService.getWalletByUserId(userId);
   const availableBalance = Number(wallet.available_balance || 0);
 
-  if (availableBalance < Number(bundle.amount)) {
+  if (availableBalance < chargeAmount) {
     const payment = await paymentService.initiatePayment({
       userId,
-      amount: bundle.amount,
+      amount: chargeAmount,
       momoNumber,
       provider: network,
       idempotencyKey: `${idempotencyKey}-fund`
@@ -56,7 +61,7 @@ async function buyData({ userId, network, bundleCode, phoneNumber, momoNumber, i
       approvalMessage: payment.approvalMessage,
       checkoutUrl: payment.checkoutUrl,
       paymentId: payment.payment.id,
-      requiredAmount: Number(bundle.amount),
+      requiredAmount: chargeAmount,
       currentBalance: availableBalance
     };
   }
@@ -65,7 +70,7 @@ async function buyData({ userId, network, bundleCode, phoneNumber, momoNumber, i
 
   const debit = await walletService.debitWallet({
     userId,
-    amount: bundle.amount,
+    amount: chargeAmount,
     reference,
     narration: `Data bundle purchase ${bundle.volume} ${network}`,
     category: "data_purchase",
@@ -81,7 +86,7 @@ async function buyData({ userId, network, bundleCode, phoneNumber, momoNumber, i
         (user_id, transaction_id, network, bundle_code, volume, amount, phone_number, status)
         VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
         RETURNING *`,
-        [userId, debit.transaction.id, network, bundleCode, bundle.volume, bundle.amount, phoneNumber]
+        [userId, debit.transaction.id, network, bundleCode, bundle.volume, chargeAmount, phoneNumber]
       );
 
       return insertResult.rows[0];
@@ -98,7 +103,7 @@ async function buyData({ userId, network, bundleCode, phoneNumber, momoNumber, i
       network,
       bundle_code: bundleCode,
       volume: bundle.volume,
-      amount: bundle.amount,
+      amount: chargeAmount,
       phone_number: phoneNumber,
       momo_number: momoNumber,
       status: "pending",
