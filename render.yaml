@@ -33,3 +33,14 @@ services:
         value: "SIMULATED"
       - key: SMTP_FROM_NAME
         value: "Prosperous Data Hub"
+
+  - type: web
+    name: data-hub-frontend
+    runtime: node
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
