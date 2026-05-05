@@ -8,8 +8,8 @@ Production-ready fintech web platform for Ghana internet data bundles (VTU), inc
 - Backend: Node.js + Express (modular service architecture)
 - Database: PostgreSQL
 - Auth: JWT + bcrypt
-- Payments: Hubtel/ExpressPay-ready adapter with simulated mode
-- Signed payment requests + callback signature verification
+- Payments: Paystack/Hubtel/ExpressPay-ready adapter with simulated mode
+- Signed payment requests + provider-specific callback signature verification (including Paystack HMAC SHA512)
 - Hosting: PM2 + Nginx + Vercel, Docker optional
 
 ## Core Features

@@ -5,6 +5,10 @@ function signPayload(secret, payload) {
   return crypto.createHmac("sha256", secret).update(payload).digest("hex");
 }
 
+function signPayloadSha512(secret, payload) {
+  return crypto.createHmac("sha512", secret).update(payload).digest("hex");
+}
+
 function safeEqual(left, right) {
   if (!left || !right) {
     return false;
@@ -59,6 +63,17 @@ function verifyExpressPayCallback({ headers, rawBody }) {
   return safeEqual(signature, expected);
 }
 
+function verifyPaystackCallback({ headers, rawBody }) {
+  const signature = headers["x-paystack-signature"];
+  const secret = env.PAYSTACK_WEBHOOK_SECRET || env.PAYSTACK_SECRET_KEY;
+  if (!secret) {
+    return false;
+  }
+
+  const expected = signPayloadSha512(secret, rawBody || "");
+  return safeEqual(signature, expected);
+}
+
 function verifyCallbackSignature({ headers, rawBody, body }) {
   const mode = env.PAYMENT_CALLBACK_PROVIDER;
 
@@ -74,6 +89,14 @@ function verifyCallbackSignature({ headers, rawBody, body }) {
     return verifyExpressPayCallback({ headers, rawBody });
   }
 
+  if (mode === "PAYSTACK") {
+    return verifyPaystackCallback({ headers, rawBody });
+  }
+
+  if (verifyPaystackCallback({ headers, rawBody })) {
+    return true;
+  }
+
   if (verifyHubtelCallback({ headers, rawBody })) {
     return true;
   }
@@ -87,6 +110,7 @@ function verifyCallbackSignature({ headers, rawBody, body }) {
 
 module.exports = {
   signPayload,
+  signPayloadSha512,
   buildHubtelSignatureHeaders,
   buildExpressPaySignatureHeaders,
   verifyCallbackSignature

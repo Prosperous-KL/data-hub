@@ -7,11 +7,17 @@ const { initiateMomoCharge } = require("./payment.provider");
 async function initiatePayment({ userId, amount, momoNumber, provider, idempotencyKey }) {
   const externalReference = `PAY-${randomUUID()}`;
 
+  const userResult = await pool.query("SELECT id, email FROM users WHERE id = $1", [userId]);
+  if (userResult.rows.length === 0) {
+    throw new ApiError(404, "User not found", "USER_NOT_FOUND");
+  }
+
   const providerResponse = await initiateMomoCharge({
     amount,
     momoNumber,
     provider,
-    externalReference
+    externalReference,
+    customerEmail: userResult.rows[0].email
   });
 
   const paymentResult = await withTransaction(async (client) => {

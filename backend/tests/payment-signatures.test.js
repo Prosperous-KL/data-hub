@@ -11,10 +11,12 @@ process.env.EXPRESSPAY_API_KEY = "exp-key";
 process.env.EXPRESSPAY_SIGNING_SECRET = "exp-signing-secret";
 process.env.HUBTEL_CALLBACK_SECRET = "hubtel-callback-secret";
 process.env.EXPRESSPAY_CALLBACK_SECRET = "exp-callback-secret";
+process.env.PAYSTACK_SECRET_KEY = "sk_test_paystack_secret";
 process.env.PAYMENT_CALLBACK_PROVIDER = "AUTO";
 
 const {
   signPayload,
+  signPayloadSha512,
   buildHubtelSignatureHeaders,
   buildExpressPaySignatureHeaders,
   verifyCallbackSignature
@@ -64,6 +66,18 @@ describe("Payment signature helpers", () => {
       headers: { "x-hubtel-signature": signature },
       rawBody,
       body: { externalReference: "PAY-2", status: "SUCCESS" }
+    });
+
+    expect(valid).toBe(true);
+  });
+
+  it("verifies Paystack callback HMAC in auto mode", () => {
+    const rawBody = JSON.stringify({ event: "charge.success", data: { reference: "PAY-3", status: "success" } });
+    const signature = signPayloadSha512("sk_test_paystack_secret", rawBody);
+    const valid = verifyCallbackSignature({
+      headers: { "x-paystack-signature": signature },
+      rawBody,
+      body: { event: "charge.success", data: { reference: "PAY-3", status: "success" } }
     });
 
     expect(valid).toBe(true);

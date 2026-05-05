@@ -88,6 +88,24 @@ Request:
 }
 ```
 
+Paystack webhook payload is also accepted:
+```json
+{
+  "event": "charge.success",
+  "data": {
+    "reference": "PAY-xxxx",
+    "status": "success",
+    "id": 123456
+  }
+}
+```
+
+Signature options:
+- Generic token mode: `x-callback-token` header
+- Hubtel mode: `x-hubtel-signature` HMAC SHA256
+- ExpressPay mode: `x-expresspay-signature` HMAC SHA256
+- Paystack mode: `x-paystack-signature` HMAC SHA512 of raw request body
+
 On SUCCESS:
 - payment status becomes success
 - wallet is credited atomically
@@ -108,6 +126,10 @@ Outbound payment-initiation requests are signed.
 - ExpressPay canonical string:
   - `METHOD|PATH|TIMESTAMP|JSON_BODY`
   - headers: `Authorization: Bearer <API_KEY>`, `X-Timestamp`, `X-Signature`
+
+- Paystack webhook signature:
+  - HMAC SHA512 of the raw callback body using `PAYSTACK_WEBHOOK_SECRET` (or `PAYSTACK_SECRET_KEY` fallback)
+  - header: `x-paystack-signature`
 
 ## Data Bundle Endpoints
 

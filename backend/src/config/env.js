@@ -32,7 +32,7 @@ const envSchema = z
   TWILIO_WHATSAPP_FROM: z.string().optional(),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_TOKENINFO_URL: z.string().url().default("https://oauth2.googleapis.com/tokeninfo"),
-  PAYMENT_PROVIDER: z.enum(["SIMULATED", "MTN", "HUBTEL", "EXPRESSPAY"]).default("SIMULATED"),
+  PAYMENT_PROVIDER: z.enum(["SIMULATED", "MTN", "HUBTEL", "EXPRESSPAY", "PAYSTACK"]).default("SIMULATED"),
   MTN_ENV: z.enum(["sandbox", "production"]).default("sandbox"),
   MTN_BASE_URL: z.string().url().optional(),
   MTN_COLLECTION_PRIMARY_KEY: z.string().optional(),
@@ -48,8 +48,14 @@ const envSchema = z
   EXPRESSPAY_API_KEY: z.string().optional(),
   EXPRESSPAY_SIGNING_SECRET: z.string().optional(),
   EXPRESSPAY_BASE_URL: z.string().optional(),
+  PAYSTACK_SECRET_KEY: z.string().optional(),
+  PAYSTACK_PUBLIC_KEY: z.string().optional(),
+  PAYSTACK_WEBHOOK_SECRET: z.string().optional(),
+  PAYSTACK_BASE_URL: z.string().url().default("https://api.paystack.co"),
+  PAYSTACK_CALLBACK_URL: z.string().url().optional(),
+  PAYSTACK_CURRENCY: z.string().default("GHS"),
   PAYMENT_CALLBACK_TOKEN: z.string().min(8).default("change_me_callback_token"),
-  PAYMENT_CALLBACK_PROVIDER: z.enum(["TOKEN", "HUBTEL", "EXPRESSPAY", "AUTO"]).default("AUTO"),
+  PAYMENT_CALLBACK_PROVIDER: z.enum(["TOKEN", "HUBTEL", "EXPRESSPAY", "PAYSTACK", "AUTO"]).default("AUTO"),
   HUBTEL_CALLBACK_SECRET: z.string().optional(),
   EXPRESSPAY_CALLBACK_SECRET: z.string().optional(),
   VTU_PROVIDER: z.enum(["SIMULATED", "REAL"]).default("SIMULATED"),
@@ -114,6 +120,26 @@ const envSchema = z
           code: z.ZodIssueCode.custom,
           path: ["MTN_COLLECTION_SUBSCRIPTION_KEY"],
           message: "MTN_COLLECTION_SUBSCRIPTION_KEY is required when PAYMENT_PROVIDER=MTN"
+        });
+      }
+    }
+
+    if (env.PAYMENT_PROVIDER === "PAYSTACK") {
+      if (!env.PAYSTACK_SECRET_KEY) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["PAYSTACK_SECRET_KEY"],
+          message: "PAYSTACK_SECRET_KEY is required when PAYMENT_PROVIDER=PAYSTACK"
+        });
+      }
+    }
+
+    if (env.PAYMENT_CALLBACK_PROVIDER === "PAYSTACK") {
+      if (!env.PAYSTACK_WEBHOOK_SECRET && !env.PAYSTACK_SECRET_KEY) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["PAYSTACK_WEBHOOK_SECRET"],
+          message: "PAYSTACK_WEBHOOK_SECRET or PAYSTACK_SECRET_KEY is required when PAYMENT_CALLBACK_PROVIDER=PAYSTACK"
         });
       }
     }

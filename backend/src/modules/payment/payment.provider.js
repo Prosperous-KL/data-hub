@@ -42,7 +42,7 @@ function resolveHubtelPaymentEndpoint(baseUrl) {
   }
 }
 
-async function initiateMomoCharge({ amount, momoNumber, provider, externalReference }) {
+async function initiateMomoCharge({ amount, momoNumber, provider, externalReference, customerEmail }) {
   const msisdn = normalizeGhanaMsisdn(momoNumber);
 
   if (env.PAYMENT_PROVIDER === "SIMULATED") {
@@ -121,17 +121,7 @@ async function initiateMomoCharge({ amount, momoNumber, provider, externalRefere
         clientReference: externalReference
       };
       const { url, path } = resolveHubtelPaymentEndpoint(env.HUBTEL_BASE_URL);
-      
-      console.log("[payment.provider] Hubtel request", {
-        url,
-        path,
-        body,
-        headers: {
-          "Content-Type": "application/json",
-          "X-Client-Secret": "***"
-        }
-      });
-      
+
       const response = await axios.post(
         url,
         body,
@@ -144,30 +134,71 @@ async function initiateMomoCharge({ amount, momoNumber, provider, externalRefere
         }
       );
 
-      console.log("[payment.provider] Hubtel response", {
-        status: response.status,
-        data: response.data
-      });
-
       return {
         providerReference: response.data.providerReference,
         status: "PENDING",
         checkoutUrl: response.data.checkoutUrl
       };
     } catch (error) {
-      console.error("[payment.provider] Hubtel error", {
-        status: error?.response?.status,
-        statusText: error?.response?.statusText,
-        data: error?.response?.data,
-        message: error?.message
-      });
-      
       const providerMessage =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         error?.response?.data?.description ||
         error?.message;
       throw new ApiError(502, `Hubtel payment prompt failed: ${providerMessage || "Provider request failed"}`, "PAYMENT_PROVIDER_ERROR");
+    }
+  }
+
+  if (env.PAYMENT_PROVIDER === "PAYSTACK") {
+    try {
+      const amountMinor = Math.round(Number(amount) * 100);
+      if (!Number.isFinite(amountMinor) || amountMinor <= 0) {
+        throw new ApiError(400, "Invalid payment amount", "INVALID_PAYMENT_AMOUNT");
+      }
+
+      const callbackUrl = env.PAYSTACK_CALLBACK_URL || `${env.APP_BASE_URL}/api/payment/callback`;
+      const response = await axios.post(
+        `${env.PAYSTACK_BASE_URL}/transaction/initialize`,
+        {
+          email: customerEmail,
+          amount: amountMinor,
+          reference: externalReference,
+          callback_url: callbackUrl,
+          currency: env.PAYSTACK_CURRENCY,
+          metadata: {
+            momoNumber: msisdn,
+            network: provider
+          }
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${env.PAYSTACK_SECRET_KEY}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      if (!response?.data?.status || !response?.data?.data?.reference) {
+        throw new ApiError(502, "Paystack response did not include a valid reference", "PAYMENT_PROVIDER_ERROR");
+      }
+
+      return {
+        providerReference: response.data.data.reference,
+        status: "PENDING",
+        checkoutUrl: response.data.data.authorization_url
+      };
+    } catch (error) {
+      const providerMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.response?.data?.description ||
+        error?.message;
+
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
+      throw new ApiError(502, `Paystack payment initialization failed: ${providerMessage || "Provider request failed"}`, "PAYMENT_PROVIDER_ERROR");
     }
   }
 
