@@ -1,13 +1,36 @@
 import Link from "next/link";
 
 const services = [
-  "Buy MTN Data",
-  "Buy Telecel Data",
-  "Buy AirtelTigo Data",
-  "Fund Wallet"
+  {
+    title: "Instant Data Bundle Delivery",
+    detail: "Customers buy MTN, Telecel, and AirtelTigo bundles with wallet-backed checkout."
+  },
+  {
+    title: "MoMo Wallet Funding",
+    detail: "Users fund wallets securely before checkout, with transaction status tracking."
+  },
+  {
+    title: "Seller Tools",
+    detail: "Business users can list products, track orders, and manage withdrawals."
+  },
+  {
+    title: "Refund Workflow",
+    detail: "Failed fulfillment cases are reviewed and refunded according to platform policy."
+  }
 ];
 
-const steps = ["Create account", "Fund wallet", "Buy data instantly"];
+const controls = [
+  "Customer authentication with OTP and session protection",
+  "Payment callback signature checks and idempotency protection",
+  "Transaction logs, ledger records, and wallet balance traceability",
+  "Admin review workflow for failed payments and refunds"
+];
+
+const steps = [
+  "Create an account and verify your contact details",
+  "Fund wallet using supported Mobile Money rails",
+  "Buy data bundles and receive status updates instantly"
+];
 
 export default function HomePage() {
   return (
@@ -37,37 +60,54 @@ export default function HomePage() {
           <div className="absolute -bottom-20 -right-10 h-72 w-72 rounded-full bg-brand-gold/15 blur-3xl" />
           <div className="relative max-w-3xl animate-floatUp">
             <p className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
-              Ghana VTU Platform
+              Ghana Digital Services Platform
             </p>
             <h1 className="mt-4 text-4xl font-black leading-tight text-brand-ink sm:text-5xl" style={{ fontFamily: "var(--font-heading)" }}>
               Prosperous Data Hub
             </h1>
             <h2 className="mt-3 text-lg font-semibold text-slate-700 sm:text-xl">
-              Buy affordable internet data bundles instantly in Ghana
+              Secure wallet-powered data and digital commerce for customers in Ghana
             </h2>
             <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-              Prosperous Data Hub is a secure virtual top-up platform that lets individuals and businesses buy mobile
-              internet bundles quickly, track every transaction, and manage wallet funding in one place.
+              Prosperous Data Hub provides internet bundle sales, wallet funding, and seller transaction tools. We use
+              verification, payment callback controls, and auditable records to protect customers and maintain a
+              transparent payment lifecycle.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link href="/login" className="btn-primary">
-                Get Started
+                Start Now
               </Link>
               <Link href="/register" className="btn-secondary">
-                Register
+                Create Account
               </Link>
+            </div>
+            <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold text-slate-600 sm:text-sm">
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1">Data Delivery</span>
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1">Wallet Funding</span>
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1">Refund Handling</span>
+              <span className="rounded-full border border-slate-300 bg-white px-3 py-1">Audit Trail</span>
             </div>
           </div>
         </section>
 
         <section className="panel p-6 sm:p-8" aria-labelledby="about-title">
           <h3 id="about-title" className="text-2xl font-black text-brand-ink" style={{ fontFamily: "var(--font-heading)" }}>
-            About
+            Business Overview
           </h3>
-          <p className="mt-3 text-sm leading-relaxed text-slate-600 sm:text-base">
-            We are a Ghana-based VTU business focused on reliable and transparent data delivery. Our goal is to make
-            purchasing internet bundles simple, fast, and affordable for customers across the country.
-          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <article className="rounded-2xl border border-slate-200 bg-white p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Business Type</p>
+              <p className="mt-2 text-sm font-semibold text-slate-800">Digital services and VTU platform</p>
+            </article>
+            <article className="rounded-2xl border border-slate-200 bg-white p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Primary Market</p>
+              <p className="mt-2 text-sm font-semibold text-slate-800">Retail and small business customers in Ghana</p>
+            </article>
+            <article className="rounded-2xl border border-slate-200 bg-white p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Fulfillment Model</p>
+              <p className="mt-2 text-sm font-semibold text-slate-800">Automated digital delivery with manual exception handling</p>
+            </article>
+          </div>
         </section>
 
         <section className="panel p-6 sm:p-8" aria-labelledby="services-title">
@@ -76,9 +116,9 @@ export default function HomePage() {
           </h3>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {services.map((service) => (
-              <article key={service} className="rounded-2xl border border-slate-200 bg-white p-4">
-                <h4 className="text-sm font-bold text-slate-800 sm:text-base">{service}</h4>
-                <p className="mt-1 text-xs text-slate-500 sm:text-sm">Instant processing with wallet-backed payment flow.</p>
+              <article key={service.title} className="rounded-2xl border border-slate-200 bg-white p-4">
+                <h4 className="text-sm font-bold text-slate-800 sm:text-base">{service.title}</h4>
+                <p className="mt-1 text-xs text-slate-500 sm:text-sm">{service.detail}</p>
               </article>
             ))}
           </div>
@@ -98,6 +138,42 @@ export default function HomePage() {
           </ol>
         </section>
 
+        <section className="panel p-6 sm:p-8" aria-labelledby="controls-title">
+          <h3 id="controls-title" className="text-2xl font-black text-brand-ink" style={{ fontFamily: "var(--font-heading)" }}>
+            Security And Compliance Controls
+          </h3>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            {controls.map((control) => (
+              <li key={control} className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
+                {control}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-xs text-slate-500 sm:text-sm">
+            We do not process prohibited products or services. Transactions are monitored and exceptions are reviewed.
+          </p>
+        </section>
+
+        <section className="panel p-6 sm:p-8" aria-labelledby="policy-title">
+          <h3 id="policy-title" className="text-2xl font-black text-brand-ink" style={{ fontFamily: "var(--font-heading)" }}>
+            Customer Policies
+          </h3>
+          <p className="mt-3 text-sm text-slate-600 sm:text-base">
+            Before creating an account, customers can review our Terms, Privacy, and Refund policies.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <Link href="/terms" className="rounded-2xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-800 transition hover:border-brand-sky hover:text-brand-ink">
+              Terms And Conditions
+            </Link>
+            <Link href="/privacy" className="rounded-2xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-800 transition hover:border-brand-sky hover:text-brand-ink">
+              Privacy Policy
+            </Link>
+            <Link href="/refund-policy" className="rounded-2xl border border-slate-200 bg-white p-4 text-sm font-semibold text-slate-800 transition hover:border-brand-sky hover:text-brand-ink">
+              Refund Policy
+            </Link>
+          </div>
+        </section>
+
         <section className="panel p-6 sm:p-8" aria-labelledby="contact-title">
           <h3 id="contact-title" className="text-2xl font-black text-brand-ink" style={{ fontFamily: "var(--font-heading)" }}>
             Contact
@@ -105,7 +181,7 @@ export default function HomePage() {
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
               <span className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Phone</span>
-              +233 XX XXX XXXX
+              +233 XX XXX XXXX (Update with active support line)
             </p>
             <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
               <span className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Email</span>
@@ -117,6 +193,10 @@ export default function HomePage() {
             </p>
           </div>
         </section>
+
+        <footer className="pb-3 text-center text-xs text-slate-500 sm:text-sm">
+          © {new Date().getFullYear()} Prosperous Data Hub. All rights reserved.
+        </footer>
       </main>
     </div>
   );

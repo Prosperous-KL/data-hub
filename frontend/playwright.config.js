@@ -9,7 +9,7 @@ module.exports = defineConfig({
     trace: "on-first-retry"
   },
   webServer: {
-    command: "npm run dev",
+    command: "npm run dev:e2e",
     port: 3000,
     reuseExistingServer: true,
     timeout: 120000

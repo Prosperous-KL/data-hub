@@ -3,6 +3,8 @@
 @tailwind utilities;
 
 :root {
+  --font-heading: "Segoe UI", "Trebuchet MS", "Arial", sans-serif;
+  --font-body: "Verdana", "Tahoma", "Arial", sans-serif;
   --bg-1: #f8fafc;
   --bg-2: #e2e8f0;
   --ink: #0f172a;
