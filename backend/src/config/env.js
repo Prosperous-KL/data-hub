@@ -144,7 +144,12 @@ const envSchema = z
       }
     }
 
-    if (env.HUBTEL_SMS_CLIENT_ID || env.HUBTEL_SMS_CLIENT_SECRET || env.HUBTEL_SMS_FROM) {
+    // Hubtel SMS is optional - only required if ALL three are explicitly configured
+    // This allows for graceful degradation (email fallback available in otpDelivery.js)
+    const smsConfigCount = [env.HUBTEL_SMS_CLIENT_ID, env.HUBTEL_SMS_CLIENT_SECRET, env.HUBTEL_SMS_FROM]
+      .filter(Boolean).length;
+    
+    if (smsConfigCount > 0 && smsConfigCount < 3) {
       if (!env.HUBTEL_SMS_CLIENT_ID) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
