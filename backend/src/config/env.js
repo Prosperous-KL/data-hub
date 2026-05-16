@@ -148,36 +148,9 @@ const envSchema = z
       }
     }
 
-    // Hubtel SMS is optional - only required if ALL three are explicitly configured
-    // This allows for graceful degradation (email fallback available in otpDelivery.js)
-    const smsConfigCount = [env.HUBTEL_SMS_CLIENT_ID, env.HUBTEL_SMS_CLIENT_SECRET, env.HUBTEL_SMS_FROM]
-      .filter(Boolean).length;
-    
-    if (smsConfigCount > 0 && smsConfigCount < 3) {
-      if (!env.HUBTEL_SMS_CLIENT_ID) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["HUBTEL_SMS_CLIENT_ID"],
-          message: "HUBTEL_SMS_CLIENT_ID is required when Hubtel SMS delivery is configured"
-        });
-      }
-
-      if (!env.HUBTEL_SMS_CLIENT_SECRET) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["HUBTEL_SMS_CLIENT_SECRET"],
-          message: "HUBTEL_SMS_CLIENT_SECRET is required when Hubtel SMS delivery is configured"
-        });
-      }
-
-      if (!env.HUBTEL_SMS_FROM) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["HUBTEL_SMS_FROM"],
-          message: "HUBTEL_SMS_FROM is required when Hubtel SMS delivery is configured"
-        });
-      }
-    }
+    // NOTE: Hubtel SMS is completely optional
+    // Email fallback is available in otpDelivery.js
+    // No validation required for SMS credentials - deployment should not fail without them
 
     // If Twilio WhatsApp vars are partially set, require them together
     if (env.TWILIO_ACCOUNT_SID || env.TWILIO_AUTH_TOKEN || env.TWILIO_WHATSAPP_FROM) {
