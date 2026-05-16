@@ -29,12 +29,6 @@ services:
         value: "https://api.hubtel.com"
       - key: HUBTEL_SMS_BASE_URL
         value: "https://smsc.hubtel.com/v1/messages/send"
-      - key: HUBTEL_SMS_CLIENT_ID
-        sync: false
-      - key: HUBTEL_SMS_CLIENT_SECRET
-        sync: false
-      - key: HUBTEL_SMS_FROM
-        sync: false
       - key: HUBTEL_CLIENT_ID
         sync: false
       - key: HUBTEL_CLIENT_SECRET
