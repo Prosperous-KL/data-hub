@@ -1,7 +1,11 @@
 const dotenv = require("dotenv");
 const { z } = require("zod");
 
-dotenv.config();
+// Only load .env file in development
+// Production uses Render environment variables
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
+}
 
 const defaultAppBaseUrl = process.env.RENDER_EXTERNAL_URL || "http://localhost:4000";
 
