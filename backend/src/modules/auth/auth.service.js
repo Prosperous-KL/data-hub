@@ -508,17 +508,11 @@ async function requestOtp({ purpose, channel, target }) {
     };
   }
 
-  console.log("[auth.service] OTP generated", {
-    purpose,
-    channel,
-    target: maskTarget(channel, normalizedTarget)
-  });
-
   const fallbackMessages = {
-    PHONE: "SMS temporarily unavailable. Please check your email or use the test OTP code provided below.",
-    WHATSAPP: "WhatsApp temporarily unavailable. Please check your email or use the test OTP code provided below.",
-    EMAIL: "Email temporarily unavailable. Please use the test OTP code provided below.",
-    SOCIAL: "Social recovery temporarily unavailable. Please use the test OTP code provided below."
+    PHONE: "SMS temporarily unavailable. Please check your email.",
+    WHATSAPP: "WhatsApp temporarily unavailable. Please check your email.",
+    EMAIL: "Email temporarily unavailable. Please try again.",
+    SOCIAL: "Social recovery temporarily unavailable. Please try again."
   };
 
   const response = {
@@ -528,11 +522,12 @@ async function requestOtp({ purpose, channel, target }) {
     target: maskTarget(channel, normalizedTarget),
     deliveryMethod: delivery.deliveryMethod,
     message: delivery.fallback
-      ? fallbackMessages[channel] || "Delivery temporarily unavailable. Please use the test OTP code provided below."
+      ? fallbackMessages[channel] || "Delivery temporarily unavailable. Please try again."
       : `Prosperous Data Hub Confirmation sent via ${delivery.deliveryMethod}`
   };
 
-  if (delivery.fallback || env.NODE_ENV !== "production") {
+  // Include OTP code in development/test environments for testing
+  if (env.NODE_ENV !== "production") {
     response.devOtp = otp.code;
   }
 

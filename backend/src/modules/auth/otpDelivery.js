@@ -161,11 +161,6 @@ async function sendHubtelSmsOtp({ code, target, purpose }) {
       );
     }
 
-    console.log("[otpDelivery] Hubtel SMS sent successfully", {
-      to,
-      messageId: data.MessageId || data.response_code
-    });
-
     return {
       deliveryMethod: "SMS",
       provider: "Hubtel",
@@ -233,16 +228,12 @@ async function sendWhatsAppOtp({ code, target, purpose }) {
     const ok = response.status >= 200 && response.status < 300;
 
     if (!ok) {
-      console.error("[otpDelivery] Twilio WhatsApp failed", { status: response.status, to: toNumber, response: data });
       throw new ApiError(502, data.message || data.error || "Failed to send WhatsApp message", "WHATSAPP_DELIVERY_FAILED", data);
     }
-
-    console.log("[otpDelivery] WhatsApp message sent", { to: toNumber, sid: data.sid });
 
     return { deliveryMethod: "WhatsApp", provider: "Twilio", messageId: data.sid };
   } catch (error) {
     if (error instanceof ApiError) throw error;
-    console.error("[otpDelivery] WhatsApp error", { message: error.message, to: target, code: error.code, response: error.response?.data });
     throw new ApiError(502, "Failed to send WhatsApp message", "WHATSAPP_PROVIDER_ERROR", { originalError: error.message });
   }
 }

@@ -18,7 +18,7 @@ const envSchema = z
   JWT_EXPIRES_IN: z.string().default("7d"),
   CORS_ORIGIN: z
     .string()
-    .default(process.env.NODE_ENV === "production" ? "*" : "http://localhost:3000"),
+    .default("http://localhost:3000"),
   APP_BASE_URL: z.string().url().default(defaultAppBaseUrl),
   SMTP_GMAIL_USER: optionalEmailFromEnv(),
   SMTP_GMAIL_APP_PASSWORD: z.string().optional(),
@@ -211,4 +211,19 @@ if (!parsed.success) {
   process.exit(1);
 }
 
-module.exports = parsed.data;
+const env = parsed.data;
+
+// Production security checks
+if (env.NODE_ENV === "production") {
+  if (env.JWT_SECRET === "change-me-render-placeholder-secret" || env.JWT_SECRET.length < 32) {
+    throw new Error("FATAL: JWT_SECRET must be a strong, unique secret (min 32 characters) in production");
+  }
+  if (env.DATABASE_URL.includes("localhost") || env.DATABASE_URL.includes("127.0.0.1")) {
+    throw new Error("FATAL: DATABASE_URL cannot point to localhost in production");
+  }
+  if (env.PAYMENT_CALLBACK_TOKEN === "change_me_callback_token") {
+    throw new Error("FATAL: PAYMENT_CALLBACK_TOKEN must be changed in production");
+  }
+}
+
+module.exports = env;

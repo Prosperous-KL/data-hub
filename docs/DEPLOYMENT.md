@@ -147,16 +147,70 @@ Services:
 - Backend: http://localhost:4000
 - PostgreSQL: localhost:5432
 
-## 6) Operations Checklist
+## 6) Security Best Practices
 
-- Use strong JWT secret (32+ chars)
-- Restrict CORS to frontend origin
-- Set production callback token for payment webhook
-- Monitor failed callback logs and refund queue
-- Run daily DB backups
-- Rotate API credentials periodically
+### Environment Variables
+- **Never commit `.env` files** - Only commit `.env.example` with placeholder values
+- **Use strong secrets** - Generate cryptographically secure values for `JWT_SECRET` and `PAYMENT_CALLBACK_TOKEN`
+  ```bash
+  # Generate a secure 32-character secret
+  node -e "console.log(require('crypto').randomBytes(16).toString('hex'))"
+  ```
+- **Rotate credentials regularly** - Plan quarterly rotation for all API keys and secrets
+- **Use secrets management** - Use Render Secrets, AWS Secrets Manager, or similar for production
 
-## 7) Automated Tests
+### CORS Configuration
+- **Production**: Set `CORS_ORIGIN` to your exact frontend domain (never use `*`)
+  ```
+  CORS_ORIGIN=https://yourdomain.com
+  ```
+- **Allow multiple domains only if necessary**:
+  ```
+  CORS_ORIGIN=https://yourdomain.com,https://www.yourdomain.com
+  ```
+
+### Database Security
+- **Use strong database password** - Generate random password with 16+ characters
+- **Enable SSL/TLS** - Always use SSL connections to database in production
+- **Limited access** - Restrict database access to application servers only
+- **Backup strategy** - Daily automated backups with encryption
+- **Audit logging** - Enable database audit logs for compliance
+
+### API Security
+- **Rate limiting** - Already enabled (100 req/min per IP)
+- **Input validation** - All endpoints validate request data with Zod schemas
+- **Error handling** - Errors don't expose sensitive information or stack traces
+- **HTTPS only** - All production endpoints must use HTTPS
+- **Security headers** - Helmet.js configured for standard security headers
+
+### Payment Security
+- **Webhook validation** - All payment callbacks verify signatures
+- **PCI Compliance** - No card data stored; payment providers handle PCI compliance
+- **Idempotency keys** - Prevent duplicate payments through idempotency protection
+- **Test provider first** - Use provider's sandbox before going live
+
+### Monitoring & Logging
+- **Application Monitoring** - Set up APM (Application Performance Monitoring)
+- **Error Tracking** - Send errors to Sentry, Rollbar, or similar
+- **Audit Trails** - Log all financial transactions
+- **Alerting** - Set up alerts for errors, failed payments, and unusual activity
+
+## 7) Operations Checklist
+
+- [ ] Use strong JWT secret (32+ chars, randomly generated)
+- [ ] Restrict CORS to frontend origin only (not `*`)
+- [ ] Set production callback token for payment webhooks
+- [ ] Enable database SSL/TLS
+- [ ] Configure automated database backups
+- [ ] Set up error tracking and monitoring
+- [ ] Monitor failed callback logs and refund queue
+- [ ] Implement audit logging for transactions
+- [ ] Create runbooks for common operational issues
+- [ ] Schedule quarterly credential rotation
+- [ ] Test disaster recovery procedure
+- [ ] Document escalation procedures
+
+## 8) Automated Tests
 
 Backend:
 

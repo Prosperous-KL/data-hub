@@ -16,8 +16,6 @@ const authService = require("./auth.service");
 
 const router = express.Router();
 
-console.log("[auth.routes] loaded");
-
 router.get("/", (_req, res) => {
   return res.json({
     success: true,

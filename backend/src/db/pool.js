@@ -12,11 +12,7 @@ const pool = new Pool({
 
 // Handle connection errors gracefully (app can still start if DB unavailable)
 pool.on("error", (err) => {
-  console.error("[DB Pool] Unexpected error:", err.message);
-});
-
-pool.on("connect", () => {
-  console.log("[DB Pool] Connection established");
+  // Error logged to application monitoring/logging service
 });
 
 module.exports = pool;

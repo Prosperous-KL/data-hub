@@ -1,144 +1,212 @@
 # Prosperous Data Hub
 
-Production-ready fintech web platform for Ghana internet data bundles (VTU), including wallet funding through Mobile Money, secure auth, instant data delivery, and admin refund controls.
+**Production-ready fintech platform** for Ghana internet data bundles (VTU), featuring secure authentication, wallet management, Mobile Money integration, and admin controls.
 
-## Stack
+## 📋 Quick Links
 
-- Frontend: Next.js 16.2.x + Tailwind CSS
-- Backend: Node.js + Express (modular service architecture)
-- Database: PostgreSQL
-- Auth: JWT + bcrypt
-- Payments: Paystack/Hubtel/ExpressPay-ready adapter with simulated mode
-- Signed payment requests + provider-specific callback signature verification (including Paystack HMAC SHA512)
-- Hosting: PM2 + Nginx + Vercel, Docker optional
+- **🚀 [Production Deployment](docs/DEPLOYMENT.md)** - Step-by-step deployment guide
+- **⚙️ [Development Setup](docs/DEVELOPMENT_SETUP.md)** - Local development environment
+- **📝 [API Documentation](docs/API.md)** - Complete API reference
+- **✅ [Production Checklist](docs/PRODUCTION_CHECKLIST.md)** - Pre-deployment verification
+- **🔒 [Production Ready](docs/PRODUCTION_READY.md)** - Production hardening summary
 
-## Core Features
+## Tech Stack
 
-- Secure register/login with JWT
-- Wallet account per user
-- Double-entry ledger and transaction history
-- MoMo wallet funding (`/api/payment/initiate`, `/api/payment/callback`)
-- Buy data bundles for MTN, Telecel, AirtelTigo
-- Automatic refund if VTU delivery fails
-- Admin dashboard for users, failed transactions, manual refunds
-- Idempotency protection for money-changing actions
-- Rate limiting + security headers + input validation
+| Component | Technology |
+|-----------|-----------|
+| **Frontend** | Next.js 16.2.x + React 19 + Tailwind CSS |
+| **Backend** | Node.js + Express (modular architecture) |
+| **Database** | PostgreSQL with connection pooling |
+| **Authentication** | JWT + bcrypt |
+| **Payments** | Hubtel, Paystack, ExpressPay (pluggable) |
+| **Hosting** | Render (recommended), PM2 + Nginx, or Docker |
 
-## Project Structure
+## ✨ Core Features
 
-```text
-backend/
-  src/
-    config/
-    db/
-    middleware/
-    modules/
-      auth/
-      wallet/
-      transaction/
-      payment/
-      vtu/
-      admin/
-frontend/
-  app/
-    (auth)/
-    dashboard/
-    buy-data/
-    wallet-funding/
-    transactions/
-    admin/
-database/
-  schema.sql
-docs/
-  API.md
-  DEPLOYMENT.md
+- ✅ Secure JWT authentication with token refresh
+- ✅ User wallet accounts with transaction history
+- ✅ Double-entry ledger for financial accuracy
+- ✅ Mobile Money wallet funding
+- ✅ Buy data bundles (MTN, Telecel, AirtelTigo)
+- ✅ Automatic refunds on delivery failure
+- ✅ Admin dashboard & user management
+- ✅ Idempotency protection for payments
+- ✅ Rate limiting & security headers
+- ✅ Input validation with Zod schemas
+
+## 📁 Project Structure
+
+```
+backend/src/           # Express backend
+  ├── config/          # Environment & config
+  ├── db/              # Database utilities
+  ├── middleware/      # Auth, validation, errors
+  ├── modules/         # Feature modules
+  │   ├── auth/        # Registration, login, OTP
+  │   ├── payment/     # Payment processing
+  │   ├── vtu/         # Data bundle purchases
+  │   ├── wallet/      # Wallet operations
+  │   ├── transaction/ # Transaction history
+  │   └── admin/       # Admin operations
+  └── utils/           # Utility functions
+
+frontend/              # Next.js frontend
+  ├── app/             # Pages & layouts
+  ├── components/      # React components
+  └── lib/             # API & utilities
+
+docs/                  # Documentation
+database/              # SQL schema
 ```
 
-## Local Run
+## 🚀 Getting Started
 
-## 1) Database
+### For Development
 
 ```bash
-createdb prosperous_data_hub
-psql -U postgres -d prosperous_data_hub -f database/schema.sql
+# Install and setup
+cd backend && npm install && npm run db:setup
+cd ../frontend && npm install
+cd ..
+
+# Copy environment files
+cp backend/.env.example backend/.env
+cp frontend/.env.local.example frontend/.env.local
+
+# Start services (in separate terminals)
+cd backend && npm run dev    # http://localhost:4000
+cd frontend && npm run dev   # http://localhost:3000
 ```
 
-## 2) Backend
+**→ See [DEVELOPMENT_SETUP.md](docs/DEVELOPMENT_SETUP.md) for detailed setup**
 
+### For Production
+
+Follow the [DEPLOYMENT.md](docs/DEPLOYMENT.md) guide for step-by-step production deployment.
+
+**Before deploying, complete the [PRODUCTION_CHECKLIST.md](docs/PRODUCTION_CHECKLIST.md)**.
+
+## 🔐 Security & Fintech Features
+
+- **Double-entry ledger** - All wallet transactions recorded with before/after balances
+- **Transaction isolation** - Database transactions prevent race conditions
+- **Row-level locking** - Wallet updates use `SELECT FOR UPDATE` to prevent double-spending
+- **Idempotency protection** - Payment operations are idempotent (safe to retry)
+- **Callback verification** - Payment webhooks verified with HMAC signatures
+- **Automatic refunds** - Failed deliveries trigger automatic wallet credits
+- **Audit trail** - All financial events logged with metadata
+- **JWT tokens** - Secure stateless authentication
+- **Rate limiting** - 100 requests/minute per IP to prevent abuse
+- **Input validation** - All inputs validated with Zod schemas
+
+## 📖 Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [DEVELOPMENT_SETUP.md](docs/DEVELOPMENT_SETUP.md) | Local development environment setup |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Production deployment instructions |
+| [PRODUCTION_CHECKLIST.md](docs/PRODUCTION_CHECKLIST.md) | Pre-deployment verification |
+| [PRODUCTION_READY.md](docs/PRODUCTION_READY.md) | Production hardening summary |
+| [API.md](docs/API.md) | Complete API endpoint reference |
+| [HUBTEL_SMS_SETUP.md](docs/HUBTEL_SMS_SETUP.md) | SMS gateway configuration |
+| [SMS_QUICK_START.md](docs/SMS_QUICK_START.md) | SMS setup quick reference |
+
+## 🧪 Testing
+
+**Backend tests:**
 ```bash
 cd backend
-cp .env.example .env
-npm install
-npm run dev
+npm test              # Run all tests
+npm run test:watch   # Watch mode
 ```
 
-Update `backend/.env` with your DB URL and secrets.
-
-### Configure Hubtel SMS (Optional but Recommended)
-
-For OTP delivery via SMS during registration/auth:
-
-```bash
-# Edit backend/.env and add:
-HUBTEL_SMS_CLIENT_ID=your_client_id
-HUBTEL_SMS_CLIENT_SECRET=your_client_secret
-HUBTEL_SMS_FROM=YourBrand
-```
-
-**[📖 Full SMS Setup Guide](docs/HUBTEL_SMS_SETUP.md)** | **[⚡ Quick Start](docs/SMS_QUICK_START.md)**
-
-Then verify configuration:
-
-```bash
-node backend/scripts/verify-hubtel-config.js
-```
-
-## 3) Frontend
-
+**Frontend E2E tests:**
 ```bash
 cd frontend
-cp .env.local.example .env.local
-npm install
-npm run dev
+npm run test:e2e      # Run Playwright tests
+npm run test:e2e:ui   # Run with UI
 ```
 
-Frontend URL: http://localhost:3000
-Backend URL: http://localhost:4000
+## 📱 Testing Payment Callbacks
 
-## Simulate Payment Callback
-
-After funding is initiated, use the returned `external_reference`:
+To test payment callback handling:
 
 ```bash
 curl -X POST http://localhost:4000/api/payment/callback \
   -H "Content-Type: application/json" \
-  -H "x-callback-token: callback_secret_token" \
+  -H "x-callback-token: your_callback_token" \
   -d '{
-    "externalReference": "PAY-REPLACE-ME",
+    "externalReference": "REF-123",
     "status": "SUCCESS",
-    "providerReference": "SIM-123"
+    "providerReference": "PROV-456"
   }'
 ```
 
-## Security and Fintech Notes
+## ⚠️ Known Issues
 
-- Wallet debit/credit operations run inside DB transactions
-- Wallet row lock (`FOR UPDATE`) prevents race conditions and double spending
-- Idempotency key required for payment initiate and data purchase
-- Automatic refund writes independent credit transaction with audit metadata
-- Ledger keeps before/after wallet balances for each financial event
-- In simulated VTU mode, `VTU_SIMULATE_FAILURE_SUFFIX` can be set to force failures for matching recipient numbers during testing
+- Next.js 16.2.x has an upstream PostCSS advisory in its bundled dependencies
+- This advisory is external to the application code and does not affect functionality
+- Application has been tested and verified working despite this advisory
 
-### Known Frontend Advisory
+## 🚢 Deployment Options
 
-The frontend is intentionally kept on the stable Next.js 16.2.x line because it passes build and E2E validation.
-`npm audit` still reports a moderate upstream PostCSS advisory through Next's bundled dependency tree, but the app remains functional and the issue is outside the project code itself.
+### Recommended: Render.com
+- Zero-config deployment
+- Automatic SSL/TLS
+- Environment variable management
+- See [DEPLOYMENT.md](docs/DEPLOYMENT.md#render-recommended-for-this-project)
 
-## Automated Tests
+### Traditional: VPS with PM2 + Nginx
+- Full control over infrastructure
+- See [DEPLOYMENT.md](docs/DEPLOYMENT.md#2-backend-deployment-nodejs--pm2--nginx)
 
-Backend:
+### Frontend: Vercel
+- Optimized for Next.js
+- Global CDN
+- See [DEPLOYMENT.md](docs/DEPLOYMENT.md#3-frontend-deployment-vercel)
 
+### Docker Compose
 ```bash
+docker compose up --build
+```
+
+## 📋 Environment Variables
+
+All environment variables are documented in:
+- `backend/.env.example` - Backend configuration
+- `frontend/.env.local.example` - Frontend configuration
+
+**⚠️ Never commit `.env` files** - Use `.env.example` templates only
+
+## 🔗 API Endpoints
+
+See [API.md](docs/API.md) for complete endpoint documentation including:
+- Authentication (register, login, logout)
+- Wallet operations
+- Payment initiation and callbacks
+- Data bundle purchases
+- Admin operations
+- Transaction history
+
+## 🤝 Contributing
+
+1. Read [DEVELOPMENT_SETUP.md](docs/DEVELOPMENT_SETUP.md)
+2. Create a feature branch
+3. Write tests for new features
+4. Ensure tests pass: `npm test` (backend) or `npm run test:e2e` (frontend)
+5. Submit a pull request
+
+## 📞 Support
+
+For deployment or configuration issues, see:
+1. [DEPLOYMENT.md](docs/DEPLOYMENT.md) - Setup instructions
+2. [PRODUCTION_CHECKLIST.md](docs/PRODUCTION_CHECKLIST.md) - Verification items
+3. [DEVELOPMENT_SETUP.md](docs/DEVELOPMENT_SETUP.md) - Troubleshooting section
+
+## 📄 License
+
+[Add your license here]
+
 cd backend
 npm test
 ```
