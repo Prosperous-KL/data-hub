@@ -181,15 +181,15 @@ export default function HomePage() {
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
               <span className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Phone</span>
-              +233 XX XXX XXXX (Update with active support line)
+              +233 248 699 146
             </p>
             <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
               <span className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Email</span>
-              support@prosperousdatahub.com
+              kwawulucky@gmail.com
             </p>
             <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
               <span className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Location</span>
-              Ghana
+              Ho, Ghana
             </p>
           </div>
         </section>
