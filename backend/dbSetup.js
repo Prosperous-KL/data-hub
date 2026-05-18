@@ -1,7 +1,11 @@
-const fs = require("fs/promises");
-const path = require("path");
-const { Client } = require("pg");
-require("dotenv").config();
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+import { Client } from "pg";
+import dotenv from "dotenv";
+dotenv.config();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 function getSslConfig(connectionString) {
 	const sslRequired =

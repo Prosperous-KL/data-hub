@@ -6,13 +6,16 @@ process.env.PAYMENT_CALLBACK_TOKEN = "callback_secret_token";
 process.env.ADMIN_EMAIL = "admin@prosperoushub.com";
 process.env.PAYMENT_CALLBACK_PROVIDER = "TOKEN";
 
-const request = require("supertest");
-const app = require("../src/app");
-const paymentService = require("../src/modules/payment/payment.service");
-
-jest.mock("../src/modules/payment/payment.service", () => ({
+jest.mock("../src/modules/payment/payment.service.js", () => ({
+  __esModule: true,
   handleCallback: jest.fn()
 }));
+
+import request from "supertest";
+import app from "../src/app.js";
+import { handleCallback } from "../src/modules/payment/payment.service.js";
+
+const paymentService = { handleCallback };
 
 describe("Payment callback security", () => {
   it("rejects callback with invalid signature", async () => {

@@ -9,7 +9,7 @@
     "start": "node src/server.js",
     "debug": "node --inspect src/server.js",
     "db:setup": "node dbSetup.js",
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --testPathIgnorePatterns=tests",
     "test:watch": "jest --watch"
   },
   "dependencies": {

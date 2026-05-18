@@ -14,13 +14,13 @@ process.env.EXPRESSPAY_CALLBACK_SECRET = "exp-callback-secret";
 process.env.PAYSTACK_SECRET_KEY = "sk_test_paystack_secret";
 process.env.PAYMENT_CALLBACK_PROVIDER = "AUTO";
 
-const {
+import {
   signPayload,
   signPayloadSha512,
   buildHubtelSignatureHeaders,
   buildExpressPaySignatureHeaders,
   verifyCallbackSignature
-} = require("../src/utils/paymentSignatures");
+} from "../src/utils/paymentSignatures.js";
 
 describe("Payment signature helpers", () => {
   it("builds Hubtel headers with signature", () => {

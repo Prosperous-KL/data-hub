@@ -7,14 +7,17 @@ process.env.ADMIN_EMAIL = "admin@prosperoushub.com";
 process.env.PAYMENT_CALLBACK_PROVIDER = "PAYSTACK";
 process.env.PAYSTACK_SECRET_KEY = "sk_test_paystack_secret";
 
-const request = require("supertest");
-const { createHmac } = require("crypto");
-const app = require("../src/app");
-const paymentService = require("../src/modules/payment/payment.service");
-
-jest.mock("../src/modules/payment/payment.service", () => ({
+jest.mock("../src/modules/payment/payment.service.js", () => ({
+  __esModule: true,
   handleCallback: jest.fn()
 }));
+
+import request from "supertest";
+import { createHmac } from "crypto";
+import app from "../src/app.js";
+import { handleCallback } from "../src/modules/payment/payment.service.js";
+
+const paymentService = { handleCallback };
 
 describe("Paystack callback security", () => {
   it("rejects callback with invalid Paystack signature", async () => {
