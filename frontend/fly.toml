@@ -1,0 +1,35 @@
+# fly.toml app configuration file generated for prosperous-data-hub-frontend on 2026-05-18T09:30:00Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "prosperous-data-hub-frontend"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "Dockerfile"
+  args = { }
+
+[env]
+  NEXT_PUBLIC_API_URL = "https://backend-calm-ridge-4035.fly.dev"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[stickiness]]
+  max_age = 86400
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+[[metrics]]
+  port = 9090
+  handlers = ["http"]
+  path = "/metrics"
