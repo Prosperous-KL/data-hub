@@ -54,3 +54,7 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: "https://backend-calm-ridge-4035.fly.dev"
+      - key: NEXT_PUBLIC_SITE_URL
+        fromGroup: frontend-env
