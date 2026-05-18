@@ -1,6 +1,6 @@
-const axios = require("axios");
-const env = require("../../config/env");
-const ApiError = require("../../utils/apiError");
+import axios from "axios";
+import env from "../../config/env.js";
+import ApiError from "../../utils/apiError.js";
 
 function parseBoolean(value) {
   if (typeof value === "boolean") {
@@ -62,6 +62,4 @@ async function verifyGoogleIdToken(idToken) {
   }
 }
 
-module.exports = {
-  verifyGoogleIdToken
-};
+export { verifyGoogleIdToken };

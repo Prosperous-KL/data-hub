@@ -1,9 +1,10 @@
-const express = require("express");
+import express from "express";
+import { authRequired } from "../../middleware/auth.js";
+import * as bundleService from "./bundle.service.js";
+import * as vtuService from "../vtu/vtu.service.js";
+import { NETWORKS, DATA_BUNDLES } from "../../utils/constants.js";
+
 const router = express.Router();
-const { authRequired } = require("../../middleware/auth");
-const bundleService = require("./bundle.service");
-const vtuService = require("../vtu/vtu.service");
-const { NETWORKS, DATA_BUNDLES } = require("../../utils/constants");
 
 // GET /api/bundles/pricing/:network - Get user's custom pricing for a network
 router.get("/pricing/:network", authRequired, async (req, res, next) => {
@@ -119,4 +120,4 @@ router.delete("/pricing/:network", authRequired, async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,9 +1,8 @@
-const axios = require("axios");
-const nodemailer = require("nodemailer");
-const env = require("../../config/env");
-const ApiError = require("../../utils/apiError");
-
-const qs = require("querystring");
+import axios from "axios";
+import nodemailer from "nodemailer";
+import env from "../../config/env.js";
+import ApiError from "../../utils/apiError.js";
+import qs from "querystring";
 
 let gmailTransporter = null;
 
@@ -263,6 +262,4 @@ async function sendAuthOtp({ code, channel, target, purpose }) {
   throw new ApiError(400, "Unsupported OTP delivery channel", "INVALID_OTP_CHANNEL");
 }
 
-module.exports = {
-  sendAuthOtp
-};
+export { sendAuthOtp };

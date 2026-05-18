@@ -1,6 +1,6 @@
-const jwt = require("jsonwebtoken");
-const env = require("../config/env");
-const ApiError = require("../utils/apiError");
+import jwt from "jsonwebtoken";
+import env from "../config/env.js";
+import ApiError from "../utils/apiError.js";
 
 function authRequired(req, _res, next) {
   const authHeader = req.headers.authorization || "";
@@ -28,7 +28,4 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = {
-  authRequired,
-  requireRole
-};
+export { authRequired, requireRole };

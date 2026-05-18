@@ -1,4 +1,4 @@
-const { z } = require("zod");
+import { z } from "zod";
 
 const otpCodeSchema = z.string().regex(/^\d{6}$/, "OTP code must be 6 digits");
 const ghPhoneRegex = /^(?:\+233|233|0)(?:2[03456789]|5\d)\d{7}$/;
@@ -121,7 +121,7 @@ const checkUsernameAvailabilitySchema = z.object({
   })
 });
 
-module.exports = {
+export {
   registerSchema,
   loginSchema,
   otpRequestSchema,

@@ -1,5 +1,5 @@
-const { Pool } = require("pg");
-const env = require("../config/env");
+import { Pool } from "pg";
+import env from "../config/env.js";
 
 const pool = new Pool({
   connectionString: env.DATABASE_URL,
@@ -15,4 +15,4 @@ pool.on("error", (err) => {
   // Error logged to application monitoring/logging service
 });
 
-module.exports = pool;
+export default pool;

@@ -1,8 +1,8 @@
-const axios = require("axios");
-const { randomUUID } = require("crypto");
-const env = require("../../config/env");
-const { buildHubtelSignatureHeaders, buildExpressPaySignatureHeaders } = require("../../utils/paymentSignatures");
-const ApiError = require("../../utils/apiError");
+import axios from "axios";
+import { randomUUID } from "crypto";
+import env from "../../config/env.js";
+import { buildHubtelSignatureHeaders, buildExpressPaySignatureHeaders } from "../../utils/paymentSignatures.js";
+import ApiError from "../../utils/apiError.js";
 
 function normalizeGhanaMsisdn(phoneNumber) {
   const digits = String(phoneNumber || "").replace(/\D/g, "");
@@ -236,6 +236,4 @@ async function initiateMomoCharge({ amount, momoNumber, provider, externalRefere
   }
 }
 
-module.exports = {
-  initiateMomoCharge
-};
+export { initiateMomoCharge };

@@ -1,5 +1,5 @@
-const dotenv = require("dotenv");
-const { z } = require("zod");
+import dotenv from "dotenv";
+import { z } from "zod";
 
 // Only load .env file in development
 // Production uses Render environment variables
@@ -208,4 +208,4 @@ if (env.NODE_ENV === "production") {
   }
 }
 
-module.exports = env;
+export default env;

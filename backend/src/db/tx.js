@@ -1,4 +1,4 @@
-const pool = require("./pool");
+import pool from "./pool.js";
 
 const MAX_TRANSACTION_RETRIES = 3;
 
@@ -36,6 +36,4 @@ async function withTransaction(handler) {
   }
 }
 
-module.exports = {
-  withTransaction
-};
+export { withTransaction };

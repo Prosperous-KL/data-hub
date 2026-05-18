@@ -1,10 +1,11 @@
-const express = require("express");
-const validate = require("../../middleware/validate");
-const { authRequired } = require("../../middleware/auth");
-const { idempotencyGuard, memoryIdempotencyStore } = require("../../middleware/idempotency");
-const pool = require("../../db/pool");
-const { buyDataSchema } = require("./vtu.validation");
-const vtuService = require("./vtu.service");
+import express from "express";
+import validate from "../../middleware/validate.js";
+import { authRequired } from "../../middleware/auth.js";
+import { idempotencyGuard, memoryIdempotencyStore } from "../../middleware/idempotency.js";
+import pool from "../../db/pool.js";
+import { buyDataSchema } from "./vtu.validation.js";
+import * as vtuService from "./vtu.service.js";
+import { DATA_BUNDLES } from "../../utils/constants.js";
 
 function shouldUseMemoryFallback(error) {
   if (!error) {
@@ -27,7 +28,6 @@ function shouldUseMemoryFallback(error) {
 const router = express.Router();
 
 router.get("/bundles", authRequired, (_req, res) => {
-  const { DATA_BUNDLES } = require("../../utils/constants");
   return res.json({ success: true, bundles: DATA_BUNDLES });
 });
 
@@ -72,4 +72,4 @@ router.post("/buy", authRequired, idempotencyGuard, validate(buyDataSchema), asy
   }
 });
 
-module.exports = router;
+export default router;

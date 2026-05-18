@@ -1,5 +1,5 @@
-const pool = require("../db/pool");
-const ApiError = require("../utils/apiError");
+import pool from "../db/pool.js";
+import ApiError from "../utils/apiError.js";
 
 const memoryIdempotencyStore = new Map();
 
@@ -72,8 +72,4 @@ async function persistIdempotencyResult(client, idempotencyKey, statusCode, payl
   );
 }
 
-module.exports = {
-  idempotencyGuard,
-  persistIdempotencyResult,
-  memoryIdempotencyStore
-};
+export { idempotencyGuard, persistIdempotencyResult, memoryIdempotencyStore };

@@ -1,4 +1,4 @@
-const { z } = require("zod");
+import { z } from "zod";
 
 const manualRefundSchema = z.object({
   body: z.object({
@@ -7,6 +7,4 @@ const manualRefundSchema = z.object({
   })
 });
 
-module.exports = {
-  manualRefundSchema
-};
+export { manualRefundSchema };

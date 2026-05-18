@@ -1,4 +1,4 @@
-const pool = require("../../db/pool");
+import pool from "../../db/pool.js";
 
 function shouldUseMemoryFallback(error) {
   if (!error) {
@@ -39,6 +39,4 @@ async function getUserTransactions(userId, limit = 50) {
   }
 }
 
-module.exports = {
-  getUserTransactions
-};
+export { getUserTransactions };

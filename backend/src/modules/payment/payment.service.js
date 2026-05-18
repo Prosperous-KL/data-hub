@@ -1,8 +1,8 @@
-const { randomUUID } = require("crypto");
-const pool = require("../../db/pool");
-const { withTransaction } = require("../../db/tx");
-const ApiError = require("../../utils/apiError");
-const { initiateMomoCharge } = require("./payment.provider");
+import { randomUUID } from "crypto";
+import pool from "../../db/pool.js";
+import { withTransaction } from "../../db/tx.js";
+import ApiError from "../../utils/apiError.js";
+import { initiateMomoCharge } from "./payment.provider.js";
 
 async function initiatePayment({ userId, amount, momoNumber, provider, idempotencyKey }) {
   const externalReference = `PAY-${randomUUID()}`;
@@ -154,7 +154,4 @@ async function handleCallback({ externalReference, status, providerReference, re
   });
 }
 
-module.exports = {
-  initiatePayment,
-  handleCallback
-};
+export { initiatePayment, handleCallback };

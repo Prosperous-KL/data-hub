@@ -1,8 +1,8 @@
-const { randomUUID } = require("crypto");
-const pool = require("../../db/pool");
-const ApiError = require("../../utils/apiError");
-const walletService = require("../wallet/wallet.service");
-const authService = require("../auth/auth.service");
+import { randomUUID } from "crypto";
+import pool from "../../db/pool.js";
+import ApiError from "../../utils/apiError.js";
+import * as walletService from "../wallet/wallet.service.js";
+import * as authService from "../auth/auth.service.js";
 
 function shouldUseMemoryFallback(error) {
   if (!error || error instanceof ApiError) {
@@ -164,9 +164,4 @@ async function manualRefund({ transactionId, reason, adminUserId }) {
   }
 }
 
-module.exports = {
-  listUsers,
-  listTransactions,
-  listFailedTransactions,
-  manualRefund
-};
+export { listUsers, listTransactions, listFailedTransactions, manualRefund };

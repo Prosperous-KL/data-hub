@@ -1,4 +1,4 @@
-const env = require("../config/env");
+import env from "../config/env.js";
 
 function notFound(_req, res) {
   return res.status(404).json({
@@ -33,7 +33,4 @@ function errorHandler(err, _req, res, _next) {
   });
 }
 
-module.exports = {
-  notFound,
-  errorHandler
-};
+export { notFound, errorHandler };

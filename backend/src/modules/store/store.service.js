@@ -1,5 +1,5 @@
-const pool = require("../../db/pool");
-const ApiError = require("../../utils/apiError");
+import pool from "../../db/pool.js";
+import ApiError from "../../utils/apiError.js";
 
 function shouldUseMemoryFallback(error) {
   if (!error || error instanceof ApiError) {
@@ -352,15 +352,4 @@ async function updateSellerSettings(sellerId, payload) {
   }
 }
 
-module.exports = {
-  listProducts,
-  createProduct,
-  updateProduct,
-  listOrders,
-  createOrder,
-  addMockOrder,
-  requestWithdrawal,
-  listWithdrawals,
-  getSellerSettings,
-  updateSellerSettings
-};
+export { listProducts, createProduct, updateProduct, listOrders, createOrder, addMockOrder, requestWithdrawal, listWithdrawals, getSellerSettings, updateSellerSettings };
