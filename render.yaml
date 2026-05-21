@@ -1,5 +1,47 @@
 services:
   - type: web
+    name: data-hub-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "4000"
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGIN
+        value: https://data-hub-frontend.onrender.com
+      - key: APP_BASE_URL
+        value: https://data-hub-backend.onrender.com
+      - key: PAYMENT_PROVIDER
+        value: PAYSTACK
+      - key: PAYMENT_CALLBACK_TOKEN
+        sync: false
+      - key: PAYMENT_CALLBACK_PROVIDER
+        value: PAYSTACK
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_WEBHOOK_SECRET
+        sync: false
+      - key: PAYSTACK_BASE_URL
+        value: https://api.paystack.co
+      - key: PAYSTACK_CURRENCY
+        value: GHS
+      - key: VTU_PROVIDER
+        value: SIMULATED
+      - key: ADMIN_EMAIL
+        value: admin@example.com
+  - type: web
     name: data-hub-frontend
     runtime: node
     rootDir: frontend
@@ -10,9 +52,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_API_URL
-        sync: false
+        value: https://data-hub-backend.onrender.com
       - key: NEXT_PUBLIC_SITE_URL
-        value: https://your-frontend.onrender.com
+        value: https://data-hub-frontend.onrender.com
 
-# Frontend deployment blueprint for Render.
-# Keep backend configuration and secrets in Railway project settings.
+# Render deployment blueprint for the full stack.
+# Supply secrets in the Render dashboard when prompted or update them after creation.
