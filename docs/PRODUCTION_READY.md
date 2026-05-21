@@ -119,7 +119,7 @@ Key production variables:
 - Certbot for SSL/TLS certificates
 - See `DEPLOYMENT.md` for configuration
 
-### Frontend: Vercel
+### Frontend: Render
 - Optimized for Next.js
 - Automatic CI/CD
 - Global CDN for faster delivery

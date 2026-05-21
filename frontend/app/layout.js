@@ -1,7 +1,9 @@
 import "./globals.css";
 
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || process.env.RENDER_EXTERNAL_URL || "http://localhost:3000"
+  ),
   title: "Prosperous Data Hub",
   description: "Ghana VTU internet data bundle platform",
   icons: {

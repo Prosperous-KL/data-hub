@@ -12,7 +12,7 @@ services:
       - key: NEXT_PUBLIC_API_URL
         sync: false
       - key: NEXT_PUBLIC_SITE_URL
-        fromGroup: frontend-env
+        value: https://your-frontend.onrender.com
 
-# Note: Backend deployment is intended for Railway per project plan.
+# Frontend deployment blueprint for Render.
 # Keep backend configuration and secrets in Railway project settings.

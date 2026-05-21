@@ -19,7 +19,7 @@
 | **Database** | PostgreSQL with connection pooling |
 | **Authentication** | JWT + bcrypt |
 | **Payments** | Hubtel, Paystack, ExpressPay (pluggable) |
-| **Hosting** | Render (recommended), PM2 + Nginx, or Docker |
+| **Hosting** | Railway backend + Render frontend + Neon Postgres |
 
 ## ✨ Core Features
 
@@ -150,20 +150,20 @@ curl -X POST http://localhost:4000/api/payment/callback \
 
 ## 🚢 Deployment Options
 
-### Recommended: Render.com
-- Zero-config deployment
-- Automatic SSL/TLS
-- Environment variable management
-- See [DEPLOYMENT.md](docs/DEPLOYMENT.md#render-recommended-for-this-project)
+### Recommended: Neon + Railway + Render
+- Neon for managed PostgreSQL
+- Railway for the backend API
+- Render for the Next.js frontend
+- See [DEPLOYMENT.md](docs/DEPLOYMENT.md#neon-railway-render-stack)
 
 ### Traditional: VPS with PM2 + Nginx
 - Full control over infrastructure
 - See [DEPLOYMENT.md](docs/DEPLOYMENT.md#2-backend-deployment-nodejs--pm2--nginx)
 
-### Frontend: Vercel
-- Optimized for Next.js
-- Global CDN
-- See [DEPLOYMENT.md](docs/DEPLOYMENT.md#3-frontend-deployment-vercel)
+### Frontend: Render
+- Optimized for Next.js web services
+- Automatic HTTPS and deploys from GitHub
+- See [DEPLOYMENT.md](docs/DEPLOYMENT.md#3-frontend-deployment-render)
 
 ### Docker Compose
 ```bash

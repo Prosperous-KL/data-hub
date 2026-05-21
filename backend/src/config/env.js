@@ -7,7 +7,11 @@ if (process.env.NODE_ENV === "development") {
   dotenv.config();
 }
 
-const defaultAppBaseUrl = process.env.RENDER_EXTERNAL_URL || "http://localhost:4000";
+const defaultAppBaseUrl =
+  process.env.RAILWAY_STATIC_URL ||
+  process.env.RENDER_EXTERNAL_URL ||
+  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : undefined) ||
+  "http://localhost:4000";
 
 function optionalEmailFromEnv() {
   return z.preprocess((value) => (value === "" ? undefined : value), z.string().email().optional());
@@ -65,7 +69,7 @@ const envSchema = z
   VTU_PROVIDER: z.enum(["SIMULATED", "REAL"]).default("SIMULATED"),
   VTU_API_KEY: z.string().optional(),
   VTU_BASE_URL: z.string().optional(),
-  ADMIN_EMAIL: z.string().email().default("admin@prosperoushub.com")
+  ADMIN_EMAIL: z.string().email().default("kwawulucky@gmail.com")
   })
   .superRefine((env, ctx) => {
     if (env.PAYMENT_PROVIDER === "HUBTEL") {

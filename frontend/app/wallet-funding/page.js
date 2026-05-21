@@ -45,6 +45,9 @@ export default function WalletFundingPage() {
         })
       });
       setResult(response);
+      if (response.checkoutUrl) {
+        window.location.href = response.checkoutUrl;
+      }
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -98,11 +101,30 @@ export default function WalletFundingPage() {
           {loading && <div className="mt-3"><LoadingState label="Contacting payment provider" /></div>}
 
           {result && (
-            <div className="mt-4 rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-800">
-              <p className="font-semibold">{result.approvalMessage}</p>
-              <p className="mt-1">Payment Reference: {result.payment.external_reference}</p>
-              <p>Checkout URL: {result.checkoutUrl || "Provider direct push"}</p>
-              <p className="mt-2 text-xs text-slate-600">
+            <div className="mt-4 rounded-xl border border-sky-200 bg-sky-50 p-5 text-sm text-sky-900 shadow-sm animate-fadeIn">
+              <p className="font-semibold text-base text-sky-900">{result.approvalMessage}</p>
+              <div className="mt-2 space-y-1 text-slate-700">
+                <p><span className="font-medium text-slate-900">Payment Reference:</span> <code className="bg-sky-100 px-1.5 py-0.5 rounded font-mono text-xs">{result.payment.external_reference}</code></p>
+                {result.checkoutUrl && (
+                  <div className="mt-4 pt-3 border-t border-sky-200">
+                    <p className="text-sm text-slate-600 mb-3">
+                      We are redirecting you to the secure checkout page. If you are not redirected automatically, please click the button below:
+                    </p>
+                    <a
+                      href={result.checkoutUrl}
+                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-sky-700 active:scale-95 transition-all duration-150"
+                      target="_self"
+                      rel="noopener noreferrer"
+                    >
+                      <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M20 12l-1.41-1.41L13 16.17V4h-2v12.17l-5.58-5.59L4 12l8 8 8-8z"/>
+                      </svg>
+                      Go to Paystack Secure Checkout
+                    </a>
+                  </div>
+                )}
+              </div>
+              <p className="mt-4 text-xs text-slate-500 border-t border-sky-100 pt-2">
                 Simulate callback by sending /api/payment/callback with status SUCCESS and this reference.
               </p>
             </div>
