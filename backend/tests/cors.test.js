@@ -6,8 +6,8 @@ process.env.PAYMENT_CALLBACK_TOKEN = "callback_secret_token";
 process.env.ADMIN_EMAIL = "admin@prosperoushub.com";
 process.env.CORS_ORIGIN = "http://localhost:3000,https://*.vercel.app,https://app.example.com";
 
-import request from "supertest";
-import app from "../src/app.js";
+const request = (await import("supertest")).default;
+const app = (await import("../src/app.js")).default;
 
 describe("CORS policy", () => {
   it("allows configured origins", async () => {

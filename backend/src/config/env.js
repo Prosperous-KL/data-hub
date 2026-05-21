@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
 import { z } from "zod";
 
-// Only load .env file in development
-// Production uses Render environment variables
-if (process.env.NODE_ENV !== "production") {
+// Only load .env file in development (avoid overriding test env vars)
+// Production uses hosting environment variables
+if (process.env.NODE_ENV === "development") {
   dotenv.config();
 }
 

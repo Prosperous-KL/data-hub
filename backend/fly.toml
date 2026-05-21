@@ -6,6 +6,9 @@
 app = 'backend-calm-ridge-4035'
 primary_region = 'lhr'
 
+[env]
+  CORS_ORIGIN = "https://prosperous-data-hub-frontend.fly.dev,https://data-hub-0jvb.onrender.com,http://localhost:3000"
+
 [build]
 
 [http_service]
