@@ -1,5 +1,5 @@
-const crypto = require("crypto");
-const env = require("../config/env");
+import crypto from "crypto";
+import env from "../config/env.js";
 
 function signPayload(secret, payload) {
   return crypto.createHmac("sha256", secret).update(payload).digest("hex");
@@ -108,10 +108,4 @@ function verifyCallbackSignature({ headers, rawBody, body }) {
   return headers["x-callback-token"] === env.PAYMENT_CALLBACK_TOKEN || body.signature === env.PAYMENT_CALLBACK_TOKEN;
 }
 
-module.exports = {
-  signPayload,
-  signPayloadSha512,
-  buildHubtelSignatureHeaders,
-  buildExpressPaySignatureHeaders,
-  verifyCallbackSignature
-};
+export { signPayload, signPayloadSha512, buildHubtelSignatureHeaders, buildExpressPaySignatureHeaders, verifyCallbackSignature };

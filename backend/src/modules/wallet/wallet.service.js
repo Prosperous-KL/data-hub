@@ -1,6 +1,6 @@
-const pool = require("../../db/pool");
-const { withTransaction } = require("../../db/tx");
-const ApiError = require("../../utils/apiError");
+import pool from "../../db/pool.js";
+import { withTransaction } from "../../db/tx.js";
+import ApiError from "../../utils/apiError.js";
 
 const memoryWallets = new Map();
 
@@ -244,8 +244,4 @@ async function debitWallet({ userId, amount, reference, narration, category, ide
   }
 }
 
-module.exports = {
-  getWalletByUserId,
-  creditWallet,
-  debitWallet
-};
+export { getWalletByUserId, creditWallet, debitWallet };

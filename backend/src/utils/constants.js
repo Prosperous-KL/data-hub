@@ -44,7 +44,4 @@ const DATA_BUNDLES = {
   ]
 };
 
-module.exports = {
-  NETWORKS,
-  DATA_BUNDLES
-};
+export { NETWORKS, DATA_BUNDLES };

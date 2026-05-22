@@ -16,7 +16,7 @@ function isValidGhanaPhone(value) {
 export default function RegisterPage() {
   const router = useRouter();
   const [form, setForm] = useState({ fullName: "", email: "", phone: "", password: "" });
-  const [channel, setChannel] = useState("PHONE");
+  const channel = "PHONE";
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -59,16 +59,6 @@ export default function RegisterPage() {
         <ErrorAlert message={error} />
 
         <div className="mt-4 space-y-3">
-          <div className="flex gap-3 text-sm">
-            <label className="flex items-center gap-1">
-              <input type="radio" name="reg-channel" checked={channel === "PHONE"} onChange={() => setChannel("PHONE")} />
-              Phone
-            </label>
-            <label className="flex items-center gap-1">
-              <input type="radio" name="reg-channel" checked={channel === "WHATSAPP"} onChange={() => setChannel("WHATSAPP")} />
-              WhatsApp
-            </label>
-          </div>
           <input name="fullName" id="fullName" className="input" type="text" placeholder="Full name" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} required />
           <input name="email" id="email" className="input" type="email" placeholder="Gmail address" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required />
           <input name="phone" id="phone" className="input" type="text" placeholder="Phone number" value={form.phone} onChange={(event) => setForm({ ...form, phone: event.target.value })} required />

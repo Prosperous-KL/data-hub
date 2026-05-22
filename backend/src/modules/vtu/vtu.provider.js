@@ -1,6 +1,6 @@
-const axios = require("axios");
-const { randomUUID } = require("crypto");
-const env = require("../../config/env");
+import axios from "axios";
+import { randomUUID } from "crypto";
+import env from "../../config/env.js";
 
 function normalizeGhanaMsisdn(phoneNumber) {
   const digits = String(phoneNumber || "").replace(/\D/g, "");
@@ -80,6 +80,4 @@ async function sendDataBundle({ network, bundleCode, phoneNumber }) {
   }
 }
 
-module.exports = {
-  sendDataBundle
-};
+export { sendDataBundle };

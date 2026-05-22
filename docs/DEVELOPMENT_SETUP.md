@@ -96,7 +96,7 @@ cd backend
 npm run db:setup
 
 # View schema
-psql -U postgres -d prosperous_data_hub -f database/schema.sql
+psql -U postgres -d prosperous_data_hub -f backend/database/schema.sql
 ```
 
 ### Environment Variables

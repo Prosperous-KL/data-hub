@@ -1,18 +1,18 @@
-const express = require("express");
-const helmet = require("helmet");
-const cors = require("cors");
-const rateLimit = require("express-rate-limit");
-const env = require("./config/env");
-const { errorHandler, notFound } = require("./middleware/errorHandler");
+import express from "express";
+import helmet from "helmet";
+import cors from "cors";
+import rateLimit from "express-rate-limit";
+import env from "./config/env.js";
+import { errorHandler, notFound } from "./middleware/errorHandler.js";
 
-const authRoutes = require("./modules/auth/auth.routes");
-const walletRoutes = require("./modules/wallet/wallet.routes");
-const transactionRoutes = require("./modules/transaction/transaction.routes");
-const paymentRoutes = require("./modules/payment/payment.routes");
-const vtuRoutes = require("./modules/vtu/vtu.routes");
-const bundleRoutes = require("./modules/bundle/bundle.routes");
-const adminRoutes = require("./modules/admin/admin.routes");
-const storeRoutes = require("./modules/store/store.routes");
+import authRoutes from "./modules/auth/auth.routes.js";
+import walletRoutes from "./modules/wallet/wallet.routes.js";
+import transactionRoutes from "./modules/transaction/transaction.routes.js";
+import paymentRoutes from "./modules/payment/payment.routes.js";
+import vtuRoutes from "./modules/vtu/vtu.routes.js";
+import bundleRoutes from "./modules/bundle/bundle.routes.js";
+import adminRoutes from "./modules/admin/admin.routes.js";
+import storeRoutes from "./modules/store/store.routes.js";
 
 const app = express();
 app.set("trust proxy", 1);
@@ -119,6 +119,4 @@ app.use("/api/store", storeRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-
-
-module.exports = app;
+export default app;

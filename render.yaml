@@ -11,36 +11,50 @@ services:
         value: production
       - key: PORT
         value: "4000"
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
       - key: JWT_EXPIRES_IN
-        value: "7d"
+        value: 7d
       - key: CORS_ORIGIN
-        value: "http://localhost:3000,https://data-hub-1-m4o4.onrender.com,https://data-hub-6kwj.onrender.com"
+        value: https://data-hub-frontend.onrender.com
+      - key: APP_BASE_URL
+        value: https://data-hub-backend-gz5j.onrender.com
       - key: PAYMENT_PROVIDER
-        value: "SIMULATED"
+        value: PAYSTACK
+      - key: PAYMENT_CALLBACK_TOKEN
+        sync: false
       - key: PAYMENT_CALLBACK_PROVIDER
-        value: "AUTO"
-      - key: HUBTEL_BASE_URL
-        value: "https://api.hubtel.com"
-      - key: HUBTEL_SMS_BASE_URL
-        value: "https://smsc.hubtel.com/v1/messages/send"
-      - key: HUBTEL_SMS_CLIENT_ID
+        value: PAYSTACK
+      - key: PAYSTACK_PUBLIC_KEY
         sync: false
-      - key: HUBTEL_SMS_CLIENT_SECRET
+      - key: PAYSTACK_SECRET_KEY
         sync: false
-      - key: HUBTEL_SMS_FROM
-        value: "Prosperous"
+      - key: PAYSTACK_WEBHOOK_SECRET
+        sync: false
+      - key: PAYSTACK_BASE_URL
+        value: https://api.paystack.co
+      - key: PAYSTACK_CURRENCY
+        value: GHS
       - key: VTU_PROVIDER
-        value: "SIMULATED"
-      - key: SMTP_FROM_NAME
-        value: "Prosperous Data Hub"
-
+        value: SIMULATED
+      - key: ADMIN_EMAIL
+        value: admin@example.com
   - type: web
     name: data-hub-frontend
     runtime: node
     rootDir: frontend
     buildCommand: npm install && npm run build
     startCommand: npm start
-    healthCheckPath: /
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://data-hub-backend-gz5j.onrender.com
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://data-hub-frontend.onrender.com
+
+# Render deployment blueprint for the full stack.
+# Supply secrets in the Render dashboard when prompted or update them after creation.

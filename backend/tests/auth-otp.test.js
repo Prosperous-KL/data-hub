@@ -5,24 +5,30 @@ process.env.PAYMENT_PROVIDER = "SIMULATED";
 process.env.PAYMENT_CALLBACK_TOKEN = "callback_secret_token";
 process.env.ADMIN_EMAIL = "admin@prosperoushub.com";
 
-jest.mock("../src/db/pool", () => ({
-  query: jest.fn(async () => ({ rows: [] }))
+import { jest } from "@jest/globals";
+
+// Use ESM-safe module mocking and dynamic imports so mocks are applied
+await jest.unstable_mockModule("../src/db/pool.js", () => ({
+  default: {
+    query: jest.fn(async () => ({ rows: [] }))
+  }
 }));
 
-jest.mock("../src/db/tx", () => ({
+await jest.unstable_mockModule("../src/db/tx.js", () => ({
   withTransaction: jest.fn(async (callback) => callback({ query: jest.fn(async () => ({ rows: [] })) }))
 }));
 
-jest.mock("../src/modules/auth/otpDelivery", () => ({
+await jest.unstable_mockModule("../src/modules/auth/otpDelivery.js", () => ({
+  __esModule: true,
   sendAuthOtp: jest.fn(async ({ channel }) => ({
     deliveryMethod: channel === "EMAIL" ? "Gmail" : "SMS"
   }))
 }));
 
-const pool = require("../src/db/pool");
-const { passwordResetSchema } = require("../src/modules/auth/auth.validation");
-const { sendAuthOtp } = require("../src/modules/auth/otpDelivery");
-const authService = require("../src/modules/auth/auth.service");
+const pool = (await import("../src/db/pool.js")).default;
+const { passwordResetSchema } = await import("../src/modules/auth/auth.validation.js");
+const { sendAuthOtp } = await import("../src/modules/auth/otpDelivery.js");
+const authService = await import("../src/modules/auth/auth.service.js");
 
 describe("Auth OTP flow", () => {
   beforeEach(() => {

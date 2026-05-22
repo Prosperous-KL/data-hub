@@ -1,4 +1,4 @@
-const { z } = require("zod");
+import { z } from "zod";
 
 const ghPhoneRegex = /^(?:\+233|233|0)(?:2[03456789]|5\d)\d{7}$/;
 
@@ -63,7 +63,4 @@ const callbackSchema = z.object({
   body: z.union([legacyCallbackBodySchema, paystackCallbackBodySchema]).transform(normalizeCallbackPayload)
 });
 
-module.exports = {
-  initiatePaymentSchema,
-  callbackSchema
-};
+export { initiatePaymentSchema, callbackSchema };

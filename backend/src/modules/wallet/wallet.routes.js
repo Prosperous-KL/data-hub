@@ -1,6 +1,6 @@
-const express = require("express");
-const { authRequired } = require("../../middleware/auth");
-const walletService = require("./wallet.service");
+import express from "express";
+import { authRequired } from "../../middleware/auth.js";
+import * as walletService from "./wallet.service.js";
 
 const router = express.Router();
 
@@ -13,4 +13,4 @@ router.get("/balance", authRequired, async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,12 +1,12 @@
-const bcrypt = require("bcrypt");
-const { randomUUID, createHash, randomInt } = require("crypto");
-const jwt = require("jsonwebtoken");
-const { withTransaction } = require("../../db/tx");
-const pool = require("../../db/pool");
-const env = require("../../config/env");
-const ApiError = require("../../utils/apiError");
-const { sendAuthOtp } = require("./otpDelivery");
-const { verifyGoogleIdToken } = require("./social.provider");
+import bcrypt from "bcrypt";
+import { randomUUID, createHash, randomInt } from "crypto";
+import jwt from "jsonwebtoken";
+import { withTransaction } from "../../db/tx.js";
+import pool from "../../db/pool.js";
+import env from "../../config/env.js";
+import ApiError from "../../utils/apiError.js";
+import { sendAuthOtp } from "./otpDelivery.js";
+import { verifyGoogleIdToken } from "./social.provider.js";
 
 const memoryUsers = [];
 const memoryOtps = [];
@@ -1004,7 +1004,7 @@ async function updateUsername({ userId, username, fullName }) {
   }
 }
 
-module.exports = {
+export {
   register,
   login,
   requestOtp,
@@ -1013,15 +1013,5 @@ module.exports = {
   resetPasswordWithOtp,
   deleteAccount,
   checkUsernameAvailability,
-  updateUsername,
-  getRegisteredUsersInMemory: () =>
-    memoryUsers.map((user) => ({
-      id: user.id,
-      full_name: user.full_name,
-      email: user.email,
-      phone: user.phone,
-      username: user.username,
-      role: user.role,
-      created_at: user.created_at
-    }))
+  updateUsername
 };

@@ -1,5 +1,5 @@
-const { z } = require("zod");
-const { NETWORKS } = require("../../utils/constants");
+import { z } from "zod";
+import { NETWORKS } from "../../utils/constants.js";
 const ghPhoneRegex = /^(?:\+233|233|0)(?:2[03456789]|5\d)\d{7}$/;
 
 function normalizePhoneInput(value) {
@@ -19,6 +19,4 @@ const buyDataSchema = z.object({
   })
 });
 
-module.exports = {
-  buyDataSchema
-};
+export { buyDataSchema };

@@ -1,8 +1,8 @@
-const express = require("express");
-const { z } = require("zod");
-const validate = require("../../middleware/validate");
-const { authRequired } = require("../../middleware/auth");
-const transactionService = require("./transaction.service");
+import express from "express";
+import { z } from "zod";
+import validate from "../../middleware/validate.js";
+import { authRequired } from "../../middleware/auth.js";
+import * as transactionService from "./transaction.service.js";
 
 const router = express.Router();
 
@@ -22,4 +22,4 @@ router.get("/", authRequired, validate(listSchema), async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -59,6 +59,9 @@ export default function HomePage() {
           <div className="absolute -left-16 -top-14 h-56 w-56 rounded-full bg-brand-sky/15 blur-3xl" />
           <div className="absolute -bottom-20 -right-10 h-72 w-72 rounded-full bg-brand-gold/15 blur-3xl" />
           <div className="relative max-w-3xl animate-floatUp">
+            <div className="mb-6 flex justify-center">
+              <img src="/prosperous-logo.png" alt="Prosperous TechPro Logo" className="h-24 sm:h-32 object-contain" />
+            </div>
             <p className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600">
               Ghana Digital Services Platform
             </p>
@@ -181,15 +184,15 @@ export default function HomePage() {
           <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
               <span className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Phone</span>
-              +233 XX XXX XXXX (Update with active support line)
+              +233 248 699 146
             </p>
             <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
               <span className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Email</span>
-              support@prosperousdatahub.com
+              kwawulucky@gmail.com
             </p>
             <p className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
               <span className="block text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Location</span>
-              Ghana
+              Ho, Ghana
             </p>
           </div>
         </section>

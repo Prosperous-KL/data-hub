@@ -1,12 +1,12 @@
-const express = require("express");
-const { authRequired } = require("../../middleware/auth");
-const validate = require("../../middleware/validate");
-const { idempotencyGuard } = require("../../middleware/idempotency");
-const pool = require("../../db/pool");
-const ApiError = require("../../utils/apiError");
-const { initiatePaymentSchema, callbackSchema } = require("./payment.validation");
-const paymentService = require("./payment.service");
-const { verifyCallbackSignature } = require("../../utils/paymentSignatures");
+import express from "express";
+import { authRequired } from "../../middleware/auth.js";
+import validate from "../../middleware/validate.js";
+import { idempotencyGuard } from "../../middleware/idempotency.js";
+import pool from "../../db/pool.js";
+import ApiError from "../../utils/apiError.js";
+import { initiatePaymentSchema, callbackSchema } from "./payment.validation.js";
+import * as paymentService from "./payment.service.js";
+import { verifyCallbackSignature } from "../../utils/paymentSignatures.js";
 
 const router = express.Router();
 
@@ -62,4 +62,4 @@ router.post("/callback", validate(callbackSchema), async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

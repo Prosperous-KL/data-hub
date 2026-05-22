@@ -1,10 +1,10 @@
 // server.js
-const app = require('./app');
-// Use Render's PORT or fallback to 4000 for local development
+import app from './app.js';
+
 const PORT = process.env.PORT || 4000;
 
-const server = app.listen(PORT, () => {
-  // Server started - port logged via environment monitoring
+const server = app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
 // Graceful error handling

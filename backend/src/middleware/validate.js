@@ -1,4 +1,4 @@
-const ApiError = require("../utils/apiError");
+import ApiError from "../utils/apiError.js";
 
 function validate(schema) {
   return (req, _res, next) => {
@@ -18,4 +18,4 @@ function validate(schema) {
   };
 }
 
-module.exports = validate;
+export default validate;

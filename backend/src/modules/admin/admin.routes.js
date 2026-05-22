@@ -1,9 +1,9 @@
-const express = require("express");
-const { z } = require("zod");
-const validate = require("../../middleware/validate");
-const { authRequired, requireRole } = require("../../middleware/auth");
-const { manualRefundSchema } = require("./admin.validation");
-const adminService = require("./admin.service");
+import express from "express";
+import { z } from "zod";
+import validate from "../../middleware/validate.js";
+import { authRequired, requireRole } from "../../middleware/auth.js";
+import { manualRefundSchema } from "./admin.validation.js";
+import * as adminService from "./admin.service.js";
 
 const router = express.Router();
 
@@ -54,4 +54,4 @@ router.post("/refund", validate(manualRefundSchema), async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

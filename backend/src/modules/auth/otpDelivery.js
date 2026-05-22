@@ -1,9 +1,8 @@
-const axios = require("axios");
-const nodemailer = require("nodemailer");
-const env = require("../../config/env");
-const ApiError = require("../../utils/apiError");
-
-const qs = require("querystring");
+import axios from "axios";
+import nodemailer from "nodemailer";
+import env from "../../config/env.js";
+import ApiError from "../../utils/apiError.js";
+import qs from "querystring";
 
 let gmailTransporter = null;
 
@@ -128,19 +127,27 @@ async function sendHubtelSmsOtp({ code, target, purpose }) {
   const content = buildConfirmationText(code, purpose);
 
   try {
-    // Hubtel API supports both GET and POST - using GET for simplicity
-    // For production, consider POST: https://smsc.hubtel.com/v1/messages/send
-    const response = await axios.get(env.HUBTEL_SMS_BASE_URL, {
-      params: {
-        clientsecret: env.HUBTEL_SMS_CLIENT_SECRET,
-        clientid: env.HUBTEL_SMS_CLIENT_ID,
-        from: env.HUBTEL_SMS_FROM,
-        to,
-        content
+    const authHeader = Buffer.from(
+      `${env.HUBTEL_SMS_CLIENT_ID}:${env.HUBTEL_SMS_CLIENT_SECRET}`
+    ).toString("base64");
+
+    const response = await axios.post(
+      env.HUBTEL_SMS_BASE_URL,
+      {
+        From: env.HUBTEL_SMS_FROM,
+        To: to,
+        Content: content
       },
-      timeout: 15000,
-      validateStatus: () => true
-    });
+      {
+        headers: {
+          Authorization: `Basic ${authHeader}`,
+          "Content-Type": "application/json",
+          Accept: "application/json"
+        },
+        timeout: 15000,
+        validateStatus: () => true
+      }
+    );
 
     const data = response.data || {};
     const isSuccess = response.status >= 200 && response.status < 300;
@@ -164,7 +171,7 @@ async function sendHubtelSmsOtp({ code, target, purpose }) {
     return {
       deliveryMethod: "SMS",
       provider: "Hubtel",
-      messageId: data.MessageId || data.response_code
+      messageId: data.messageId || data.MessageId || data.response_code || data.clientReference
     };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -263,6 +270,4 @@ async function sendAuthOtp({ code, channel, target, purpose }) {
   throw new ApiError(400, "Unsupported OTP delivery channel", "INVALID_OTP_CHANNEL");
 }
 
-module.exports = {
-  sendAuthOtp
-};
+export { sendAuthOtp };

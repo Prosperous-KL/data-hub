@@ -14,13 +14,16 @@ process.env.EXPRESSPAY_CALLBACK_SECRET = "exp-callback-secret";
 process.env.PAYSTACK_SECRET_KEY = "sk_test_paystack_secret";
 process.env.PAYMENT_CALLBACK_PROVIDER = "AUTO";
 
+import { jest } from "@jest/globals";
+
+// Import the module after setting env so env is read at module evaluation time
 const {
   signPayload,
   signPayloadSha512,
   buildHubtelSignatureHeaders,
   buildExpressPaySignatureHeaders,
   verifyCallbackSignature
-} = require("../src/utils/paymentSignatures");
+} = await import("../src/utils/paymentSignatures.js");
 
 describe("Payment signature helpers", () => {
   it("builds Hubtel headers with signature", () => {

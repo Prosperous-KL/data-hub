@@ -7,14 +7,18 @@ process.env.ADMIN_EMAIL = "admin@prosperoushub.com";
 process.env.PAYMENT_CALLBACK_PROVIDER = "PAYSTACK";
 process.env.PAYSTACK_SECRET_KEY = "sk_test_paystack_secret";
 
-const request = require("supertest");
-const { createHmac } = require("crypto");
-const app = require("../src/app");
-const paymentService = require("../src/modules/payment/payment.service");
+import { jest } from "@jest/globals";
 
-jest.mock("../src/modules/payment/payment.service", () => ({
+// Apply ESM-safe mock before importing modules
+await jest.unstable_mockModule("../src/modules/payment/payment.service.js", () => ({
+  __esModule: true,
   handleCallback: jest.fn()
 }));
+
+const request = (await import("supertest")).default;
+const { createHmac } = await import("crypto");
+const app = (await import("../src/app.js")).default;
+const paymentService = await import("../src/modules/payment/payment.service.js");
 
 describe("Paystack callback security", () => {
   it("rejects callback with invalid Paystack signature", async () => {

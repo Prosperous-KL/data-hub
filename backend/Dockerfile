@@ -2,6 +2,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Cache buster - forces fresh build when set
+ARG CACHE_BUST=1
+
 COPY package*.json ./
 RUN npm install --omit=dev
 

@@ -1,7 +1,7 @@
-const pool = require("../../db/pool");
-const { withTransaction } = require("../../db/tx");
-const ApiError = require("../../utils/apiError");
-const { DATA_BUNDLES } = require("../../utils/constants");
+import pool from "../../db/pool.js";
+import { withTransaction } from "../../db/tx.js";
+import ApiError from "../../utils/apiError.js";
+import { DATA_BUNDLES } from "../../utils/constants.js";
 
 async function getUserBundlePricing(userId, network) {
   const result = await pool.query(
@@ -86,9 +86,4 @@ async function resetToDefaults(userId, network) {
   return result.rowCount;
 }
 
-module.exports = {
-  getUserBundlePricing,
-  setBundlePricing,
-  getEffectivePrice,
-  resetToDefaults
-};
+export { getUserBundlePricing, setBundlePricing, getEffectivePrice, resetToDefaults };

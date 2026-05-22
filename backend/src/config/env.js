@@ -1,9 +1,17 @@
-const dotenv = require("dotenv");
-const { z } = require("zod");
+import dotenv from "dotenv";
+import { z } from "zod";
 
-dotenv.config();
+// Only load .env file in development (avoid overriding test env vars)
+// Production uses hosting environment variables
+if (process.env.NODE_ENV === "development") {
+  dotenv.config();
+}
 
-const defaultAppBaseUrl = process.env.RENDER_EXTERNAL_URL || "http://localhost:4000";
+const defaultAppBaseUrl =
+  process.env.RAILWAY_STATIC_URL ||
+  process.env.RENDER_EXTERNAL_URL ||
+  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : undefined) ||
+  "http://localhost:4000";
 
 function optionalEmailFromEnv() {
   return z.preprocess((value) => (value === "" ? undefined : value), z.string().email().optional());
@@ -61,7 +69,7 @@ const envSchema = z
   VTU_PROVIDER: z.enum(["SIMULATED", "REAL"]).default("SIMULATED"),
   VTU_API_KEY: z.string().optional(),
   VTU_BASE_URL: z.string().optional(),
-  ADMIN_EMAIL: z.string().email().default("admin@prosperoushub.com")
+  ADMIN_EMAIL: z.string().email().default("kwawulucky@gmail.com")
   })
   .superRefine((env, ctx) => {
     if (env.PAYMENT_PROVIDER === "HUBTEL") {
@@ -144,31 +152,9 @@ const envSchema = z
       }
     }
 
-    if (env.HUBTEL_SMS_CLIENT_ID || env.HUBTEL_SMS_CLIENT_SECRET || env.HUBTEL_SMS_FROM) {
-      if (!env.HUBTEL_SMS_CLIENT_ID) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["HUBTEL_SMS_CLIENT_ID"],
-          message: "HUBTEL_SMS_CLIENT_ID is required when Hubtel SMS delivery is configured"
-        });
-      }
-
-      if (!env.HUBTEL_SMS_CLIENT_SECRET) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["HUBTEL_SMS_CLIENT_SECRET"],
-          message: "HUBTEL_SMS_CLIENT_SECRET is required when Hubtel SMS delivery is configured"
-        });
-      }
-
-      if (!env.HUBTEL_SMS_FROM) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ["HUBTEL_SMS_FROM"],
-          message: "HUBTEL_SMS_FROM is required when Hubtel SMS delivery is configured"
-        });
-      }
-    }
+    // NOTE: Hubtel SMS is completely optional
+    // Email fallback is available in otpDelivery.js
+    // No validation required for SMS credentials - deployment should not fail without them
 
     // If Twilio WhatsApp vars are partially set, require them together
     if (env.TWILIO_ACCOUNT_SID || env.TWILIO_AUTH_TOKEN || env.TWILIO_WHATSAPP_FROM) {
@@ -226,4 +212,4 @@ if (env.NODE_ENV === "production") {
   }
 }
 
-module.exports = env;
+export default env;

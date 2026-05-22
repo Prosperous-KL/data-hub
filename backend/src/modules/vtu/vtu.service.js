@@ -1,12 +1,12 @@
-const { randomUUID } = require("crypto");
-const pool = require("../../db/pool");
-const { withTransaction } = require("../../db/tx");
-const ApiError = require("../../utils/apiError");
-const walletService = require("../wallet/wallet.service");
-const paymentService = require("../payment/payment.service");
-const bundleService = require("../bundle/bundle.service");
-const { DATA_BUNDLES } = require("../../utils/constants");
-const { sendDataBundle } = require("./vtu.provider");
+import { randomUUID } from "crypto";
+import pool from "../../db/pool.js";
+import { withTransaction } from "../../db/tx.js";
+import ApiError from "../../utils/apiError.js";
+import * as walletService from "../wallet/wallet.service.js";
+import * as paymentService from "../payment/payment.service.js";
+import * as bundleService from "../bundle/bundle.service.js";
+import { DATA_BUNDLES } from "../../utils/constants.js";
+import { sendDataBundle } from "./vtu.provider.js";
 
 const memoryPurchases = [];
 
@@ -187,6 +187,4 @@ async function buyData({ userId, network, bundleCode, phoneNumber, momoNumber, i
   };
 }
 
-module.exports = {
-  buyData
-};
+export { buyData };

@@ -1,7 +1,7 @@
-const express = require("express");
-const validate = require("../../middleware/validate");
-const { authRequired } = require("../../middleware/auth");
-const {
+import express from "express";
+import validate from "../../middleware/validate.js";
+import { authRequired } from "../../middleware/auth.js";
+import {
   registerSchema,
   loginSchema,
   otpRequestSchema,
@@ -11,8 +11,8 @@ const {
   deleteAccountSchema,
   updateUsernameSchema,
   checkUsernameAvailabilitySchema
-} = require("./auth.validation");
-const authService = require("./auth.service");
+} from "./auth.validation.js";
+import * as authService from "./auth.service.js";
 
 const router = express.Router();
 
@@ -159,4 +159,4 @@ router.get("/me", authRequired, async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;
