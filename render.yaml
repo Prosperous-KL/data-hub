@@ -20,7 +20,7 @@ services:
       - key: CORS_ORIGIN
         value: https://data-hub-frontend.onrender.com
       - key: APP_BASE_URL
-        value: https://data-hub-backend.onrender.com
+        value: https://data-hub-backend-gz5j.onrender.com
       - key: PAYMENT_PROVIDER
         value: PAYSTACK
       - key: PAYMENT_CALLBACK_TOKEN
@@ -52,7 +52,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: NEXT_PUBLIC_API_URL
-        value: https://data-hub-backend.onrender.com
+        value: https://data-hub-backend-gz5j.onrender.com
       - key: NEXT_PUBLIC_SITE_URL
         value: https://data-hub-frontend.onrender.com
 
