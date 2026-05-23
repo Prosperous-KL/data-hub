@@ -8,7 +8,19 @@ const { initiatePaymentSchema, callbackSchema } = require("./payment.validation"
 const paymentService = require("./payment.service");
 const { verifyCallbackSignature } = require("../../utils/paymentSignatures");
 
+const env = require("../../config/env");
+
 const router = express.Router();
+
+router.get("/callback", async (req, res, next) => {
+  try {
+    const { reference, trxref } = req.query;
+    const paymentRef = reference || trxref || "";
+    return res.redirect(`${env.CORS_ORIGIN}/dashboard?payment_ref=${paymentRef}`);
+  } catch (error) {
+    return next(error);
+  }
+});
 
 router.post(
   "/initiate",

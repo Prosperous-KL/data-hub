@@ -1,25 +1,7 @@
 const pool = require("../db/pool");
 const ApiError = require("../utils/apiError");
-
-const memoryIdempotencyStore = new Map();
-
-function shouldUseMemoryFallback(error) {
-  if (!error || error instanceof ApiError) {
-    return false;
-  }
-
-  const code = String(error.code || "").toUpperCase();
-  const message = String(error.message || "").toLowerCase();
-
-  return (
-    code === "ECONNREFUSED" ||
-    code === "ENOTFOUND" ||
-    code === "ETIMEDOUT" ||
-    message.includes("connect") ||
-    message.includes("database") ||
-    message.includes("timeout")
-  );
-}
+const { shouldUseMemoryFallback } = require("../utils/memoryFallback");
+const { memoryIdempotencyStore } = require("../utils/mockDb");
 
 async function idempotencyGuard(req, res, next) {
   const idempotencyKey = req.headers["x-idempotency-key"];

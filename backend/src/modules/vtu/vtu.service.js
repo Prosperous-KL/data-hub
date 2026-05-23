@@ -8,25 +8,8 @@ const bundleService = require("../bundle/bundle.service");
 const { DATA_BUNDLES } = require("../../utils/constants");
 const { sendDataBundle } = require("./vtu.provider");
 
-const memoryPurchases = [];
-
-function shouldUseMemoryFallback(error) {
-  if (!error || error instanceof ApiError) {
-    return false;
-  }
-
-  const code = String(error.code || "").toUpperCase();
-  const message = String(error.message || "").toLowerCase();
-
-  return (
-    code === "ECONNREFUSED" ||
-    code === "ENOTFOUND" ||
-    code === "ETIMEDOUT" ||
-    message.includes("connect") ||
-    message.includes("database") ||
-    message.includes("timeout")
-  );
-}
+const { shouldUseMemoryFallback } = require("../../utils/memoryFallback");
+const { memoryPurchases } = require("../../utils/mockDb");
 
 function getBundle(network, bundleCode) {
   const bundle = (DATA_BUNDLES[network] || []).find((item) => item.code === bundleCode);
@@ -152,7 +135,7 @@ async function buyData({ userId, network, bundleCode, phoneNumber, momoNumber, i
 
   await walletService.creditWallet({
     userId,
-    amount: bundle.amount,
+    amount: chargeAmount,
     reference: refundReference,
     narration: `Refund for failed data purchase ${bundle.volume} ${network}`,
     category: "refund",

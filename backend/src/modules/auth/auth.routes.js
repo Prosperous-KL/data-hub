@@ -10,7 +10,9 @@ const {
   passwordResetSchema,
   deleteAccountSchema,
   updateUsernameSchema,
-  checkUsernameAvailabilitySchema
+  checkUsernameAvailabilitySchema,
+  refreshSchema,
+  logoutSchema
 } = require("./auth.validation");
 const authService = require("./auth.service");
 
@@ -154,6 +156,31 @@ router.get("/me", authRequired, async (req, res, next) => {
         role: req.user.role
       }
     });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post("/refresh", validate(refreshSchema), async (req, res, next) => {
+  try {
+    const { refreshToken } = req.validated.body;
+    const tokens = await authService.refreshToken(refreshToken);
+    return res.json({
+      success: true,
+      token: tokens.accessToken,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post("/logout", authRequired, validate(logoutSchema), async (req, res, next) => {
+  try {
+    const { refreshToken } = req.validated.body;
+    await authService.logout(req.token, refreshToken);
+    return res.json({ success: true, message: "Logged out successfully" });
   } catch (error) {
     return next(error);
   }

@@ -207,20 +207,3 @@ For deployment or configuration issues, see:
 
 [Add your license here]
 
-cd backend
-npm test
-```
-
-Frontend:
-
-```bash
-cd frontend
-npx playwright install
-npm run test:e2e
-```
-
-## Deployment
-
-See:
-- docs/DEPLOYMENT.md
-- docs/API.md

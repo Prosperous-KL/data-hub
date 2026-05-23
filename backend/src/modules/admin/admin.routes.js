@@ -9,7 +9,8 @@ const router = express.Router();
 
 const querySchema = z.object({
   query: z.object({
-    limit: z.coerce.number().int().min(1).max(500).optional()
+    limit: z.coerce.number().int().min(1).max(500).optional().default(100),
+    page: z.coerce.number().int().min(1).optional().default(1)
   })
 });
 
@@ -17,8 +18,9 @@ router.use(authRequired, requireRole("admin"));
 
 router.get("/users", validate(querySchema), async (req, res, next) => {
   try {
-    const users = await adminService.listUsers(req.validated.query.limit || 100);
-    return res.json({ success: true, users });
+    const { limit, page } = req.validated.query;
+    const result = await adminService.listUsers(limit, page);
+    return res.json({ success: true, users: result.data, total: result.total, page: result.page, totalPages: result.totalPages });
   } catch (error) {
     return next(error);
   }
@@ -26,8 +28,9 @@ router.get("/users", validate(querySchema), async (req, res, next) => {
 
 router.get("/transactions", validate(querySchema), async (req, res, next) => {
   try {
-    const transactions = await adminService.listTransactions(req.validated.query.limit || 200);
-    return res.json({ success: true, transactions });
+    const { limit, page } = req.validated.query;
+    const result = await adminService.listTransactions(limit, page);
+    return res.json({ success: true, transactions: result.data, total: result.total, page: result.page, totalPages: result.totalPages });
   } catch (error) {
     return next(error);
   }
@@ -35,8 +38,9 @@ router.get("/transactions", validate(querySchema), async (req, res, next) => {
 
 router.get("/transactions/failed", validate(querySchema), async (req, res, next) => {
   try {
-    const transactions = await adminService.listFailedTransactions(req.validated.query.limit || 200);
-    return res.json({ success: true, transactions });
+    const { limit, page } = req.validated.query;
+    const result = await adminService.listFailedTransactions(limit, page);
+    return res.json({ success: true, transactions: result.data, total: result.total, page: result.page, totalPages: result.totalPages });
   } catch (error) {
     return next(error);
   }

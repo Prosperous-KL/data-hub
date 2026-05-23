@@ -26,7 +26,7 @@ export default function LoginPage() {
         method: "POST",
         body: form
       });
-      saveSession(response.token, response.user);
+      saveSession(response.accessToken, response.user, response.refreshToken);
       router.replace("/dashboard");
     } catch (requestError) {
       setError(requestError.message);

@@ -44,3 +44,5 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://data-hub-backend.onrender.com

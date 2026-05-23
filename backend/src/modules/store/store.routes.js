@@ -112,11 +112,20 @@ router.get("/settings", requireRole("seller"), async (req, res, next) => {
     return next(err);
   }
 });
+const storeSettingsSchema = z.object({
+  body: z.object({
+    shop_name: z.string().max(160).optional(),
+    open: z.boolean().optional(),
+    closed_notice: z.string().optional(),
+    support_contact: z.string().max(50).optional(),
+    community_link: z.string().optional()
+  })
+});
 
-router.post("/settings", requireRole("seller"), async (req, res, next) => {
+router.post("/settings", requireRole("seller"), validate(storeSettingsSchema), async (req, res, next) => {
   try {
     const sellerId = req.user.sub;
-    const settings = await storeService.updateSellerSettings(sellerId, req.body || {});
+    const settings = await storeService.updateSellerSettings(sellerId, req.validated.body);
     return res.json({ success: true, settings });
   } catch (err) {
     return next(err);

@@ -3,27 +3,15 @@ const pool = require("../../db/pool");
 const ApiError = require("../../utils/apiError");
 const walletService = require("../wallet/wallet.service");
 const authService = require("../auth/auth.service");
+const { shouldUseMemoryFallback } = require("../../utils/memoryFallback");
 
-function shouldUseMemoryFallback(error) {
-  if (!error || error instanceof ApiError) {
-    return false;
-  }
+async function listUsers(limit = 100, page = 1) {
+  const offset = (page - 1) * limit;
 
-  const code = String(error.code || "").toUpperCase();
-  const message = String(error.message || "").toLowerCase();
-
-  return (
-    code === "ECONNREFUSED" ||
-    code === "ENOTFOUND" ||
-    code === "ETIMEDOUT" ||
-    message.includes("connect") ||
-    message.includes("database") ||
-    message.includes("timeout")
-  );
-}
-
-async function listUsers(limit = 100) {
   try {
+    const countResult = await pool.query(`SELECT COUNT(*)::int AS total FROM users`);
+    const total = countResult.rows[0].total;
+
     const result = await pool.query(
       `SELECT
          u.id,
@@ -43,60 +31,86 @@ async function listUsers(limit = 100) {
          GROUP BY user_id
        ) tx ON tx.user_id = u.id
        ORDER BY u.created_at DESC
-       LIMIT $1`,
-      [limit]
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
     );
 
-    return result.rows;
+    return {
+      data: result.rows,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit) || 1
+    };
   } catch (error) {
     if (shouldUseMemoryFallback(error)) {
-      return authService.getRegisteredUsersInMemory().map((user) => ({
+      const data = authService.getRegisteredUsersInMemory().map((user) => ({
         ...user,
         wallet_balance: 0,
         transaction_count: 0,
         last_transaction_at: user.created_at
       }));
+      return { data, total: data.length, page: 1, totalPages: 1 };
     }
 
     throw error;
   }
 }
 
-async function listTransactions(limit = 200) {
+async function listTransactions(limit = 200, page = 1) {
+  const offset = (page - 1) * limit;
+
   try {
+    const countResult = await pool.query(`SELECT COUNT(*)::int AS total FROM transactions`);
+    const total = countResult.rows[0].total;
+
     const result = await pool.query(
       `SELECT id, user_id, type, amount, status, reference, narration, category, metadata, created_at
        FROM transactions
        ORDER BY created_at DESC
-       LIMIT $1`,
-      [limit]
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
     );
 
-    return result.rows;
+    return {
+      data: result.rows,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit) || 1
+    };
   } catch (error) {
     if (shouldUseMemoryFallback(error)) {
-      return [];
+      return { data: [], total: 0, page: 1, totalPages: 1 };
     }
 
     throw error;
   }
 }
 
-async function listFailedTransactions(limit = 200) {
+async function listFailedTransactions(limit = 200, page = 1) {
+  const offset = (page - 1) * limit;
+
   try {
+    const countResult = await pool.query(`SELECT COUNT(*)::int AS total FROM transactions WHERE status = 'failed' OR category = 'refund'`);
+    const total = countResult.rows[0].total;
+
     const result = await pool.query(
       `SELECT id, user_id, type, amount, status, reference, narration, category, metadata, created_at
        FROM transactions
        WHERE status = 'failed' OR category = 'refund'
        ORDER BY created_at DESC
-       LIMIT $1`,
-      [limit]
+       LIMIT $1 OFFSET $2`,
+      [limit, offset]
     );
 
-    return result.rows;
+    return {
+      data: result.rows,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit) || 1
+    };
   } catch (error) {
     if (shouldUseMemoryFallback(error)) {
-      return [];
+      return { data: [], total: 0, page: 1, totalPages: 1 };
     }
 
     throw error;

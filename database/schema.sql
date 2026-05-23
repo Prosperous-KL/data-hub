@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(255) NOT NULL UNIQUE,
   phone VARCHAR(25) NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
-  role VARCHAR(20) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  role VARCHAR(20) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin', 'seller')),
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -286,5 +286,33 @@ BEGIN
     ADD CONSTRAINT idempotency_response_status_range CHECK (response_status BETWEEN 100 AND 599);
   END IF;
 END $$;
+
+CREATE TABLE IF NOT EXISTS bundle_pricing (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  bundle_code VARCHAR(50) NOT NULL,
+  network VARCHAR(20) NOT NULL CHECK (network IN ('MTN', 'TELECEL', 'AIRTELTIGO')),
+  base_price NUMERIC(8, 2) NOT NULL CHECK (base_price >= 0),
+  custom_profit NUMERIC(8, 2) NOT NULL CHECK (custom_profit >= 0),
+  selling_price NUMERIC(8, 2) NOT NULL CHECK (selling_price > 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, bundle_code)
+);
+
+CREATE INDEX IF NOT EXISTS idx_bundle_pricing_user_network
+ON bundle_pricing(user_id, network);
+
+DROP TRIGGER IF EXISTS trg_bundle_pricing_set_updated_at ON bundle_pricing;
+CREATE TRIGGER trg_bundle_pricing_set_updated_at
+BEFORE UPDATE ON bundle_pricing
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+CREATE TABLE IF NOT EXISTS jwt_blacklist (
+  token TEXT PRIMARY KEY,
+  expires_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 
 COMMIT;

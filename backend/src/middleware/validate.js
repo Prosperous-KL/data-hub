@@ -10,7 +10,10 @@ function validate(schema) {
     });
 
     if (!parsed.success) {
-      return next(new ApiError(400, "Validation failed", "VALIDATION_ERROR"));
+      if (process.env.NODE_ENV !== "production") {
+        console.error("[validate] Validation failed:", JSON.stringify(parsed.error.errors, null, 2));
+      }
+      return next(new ApiError(400, "Validation failed", "VALIDATION_ERROR", parsed.error.errors));
     }
 
     req.validated = parsed.data;

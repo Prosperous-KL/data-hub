@@ -1,26 +1,7 @@
 const pool = require("../../db/pool");
 const ApiError = require("../../utils/apiError");
-
-function shouldUseMemoryFallback(error) {
-  if (!error || error instanceof ApiError) {
-    return false;
-  }
-
-  const code = String(error.code || "").toUpperCase();
-  const message = String(error.message || "").toLowerCase();
-
-  return (
-    code === "ECONNREFUSED" ||
-    code === "ENOTFOUND" ||
-    code === "ETIMEDOUT" ||
-    message.includes("connect") ||
-    message.includes("database") ||
-    message.includes("timeout")
-  );
-}
-
-const memoryProducts = [];
-const memoryOrders = [];
+const { shouldUseMemoryFallback } = require("../../utils/memoryFallback");
+const { memoryProducts, memoryOrders } = require("../../utils/mockDb");
 const memoryWithdrawals = [];
 let memorySettings = {
   shop_name: "Prosperous Data Hub",

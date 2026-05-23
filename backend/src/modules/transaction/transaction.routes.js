@@ -8,15 +8,16 @@ const router = express.Router();
 
 const listSchema = z.object({
   query: z.object({
-    limit: z.coerce.number().int().min(1).max(200).optional()
+    limit: z.coerce.number().int().min(1).max(200).optional().default(50),
+    page: z.coerce.number().int().min(1).optional().default(1)
   })
 });
 
 router.get("/", authRequired, validate(listSchema), async (req, res, next) => {
   try {
-    const limit = req.validated.query.limit || 50;
-    const transactions = await transactionService.getUserTransactions(req.user.sub, limit);
-    return res.json({ success: true, transactions });
+    const { limit, page } = req.validated.query;
+    const transactions = await transactionService.getUserTransactions(req.user.sub, limit, page);
+    return res.json({ success: true, transactions: transactions.data, total: transactions.total, page: transactions.page, totalPages: transactions.totalPages });
   } catch (error) {
     return next(error);
   }

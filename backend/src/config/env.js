@@ -61,6 +61,7 @@ const envSchema = z
   VTU_PROVIDER: z.enum(["SIMULATED", "REAL"]).default("SIMULATED"),
   VTU_API_KEY: z.string().optional(),
   VTU_BASE_URL: z.string().optional(),
+  VTU_SIMULATE_FAILURE_SUFFIX: z.string().optional(),
   ADMIN_EMAIL: z.string().email().default("admin@prosperoushub.com")
   })
   .superRefine((env, ctx) => {

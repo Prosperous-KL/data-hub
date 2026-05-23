@@ -5,9 +5,15 @@ process.env.PAYMENT_PROVIDER = "SIMULATED";
 process.env.PAYMENT_CALLBACK_TOKEN = "callback_secret_token";
 process.env.ADMIN_EMAIL = "admin@prosperoushub.com";
 
-jest.mock("../src/db/pool", () => ({
-  query: jest.fn(async () => ({ rows: [] }))
-}));
+jest.mock("../src/db/pool", () => {
+  const query = jest.fn(async (text, params) => {
+    if (text && text.includes("FROM users")) {
+      return { rows: [{ id: "test-user-id", email: "user@example.com", phone: "1234567890" }] };
+    }
+    return { rows: [] };
+  });
+  return { query };
+});
 
 jest.mock("../src/db/tx", () => ({
   withTransaction: jest.fn(async (callback) => callback({ query: jest.fn(async () => ({ rows: [] })) }))

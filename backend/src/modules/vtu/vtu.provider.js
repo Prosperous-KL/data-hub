@@ -18,7 +18,7 @@ function normalizeGhanaMsisdn(phoneNumber) {
 
 async function sendDataBundle({ network, bundleCode, phoneNumber }) {
   if (env.VTU_PROVIDER === "SIMULATED") {
-    const failureSuffix = String(process.env.VTU_SIMULATE_FAILURE_SUFFIX || "").trim();
+    const failureSuffix = env.VTU_SIMULATE_FAILURE_SUFFIX?.trim() || "";
     if (failureSuffix && String(phoneNumber || "").endsWith(failureSuffix)) {
       return {
         success: false,

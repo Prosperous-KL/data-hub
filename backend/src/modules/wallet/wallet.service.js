@@ -1,8 +1,8 @@
 const pool = require("../../db/pool");
 const { withTransaction } = require("../../db/tx");
 const ApiError = require("../../utils/apiError");
-
-const memoryWallets = new Map();
+const { shouldUseMemoryFallback } = require("../../utils/memoryFallback");
+const { memoryWallets } = require("../../utils/mockDb");
 
 function getOrCreateMemoryWallet(userId) {
   if (memoryWallets.has(userId)) {
@@ -19,24 +19,6 @@ function getOrCreateMemoryWallet(userId) {
 
   memoryWallets.set(userId, wallet);
   return wallet;
-}
-
-function shouldUseMemoryFallback(error) {
-  if (!error || error instanceof ApiError) {
-    return false;
-  }
-
-  const code = String(error.code || "").toUpperCase();
-  const message = String(error.message || "").toLowerCase();
-
-  return (
-    code === "ECONNREFUSED" ||
-    code === "ENOTFOUND" ||
-    code === "ETIMEDOUT" ||
-    message.includes("connect") ||
-    message.includes("database") ||
-    message.includes("timeout")
-  );
 }
 
 async function getWalletByUserId(userId) {

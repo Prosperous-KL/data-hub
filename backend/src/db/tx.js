@@ -13,7 +13,7 @@ async function withTransaction(handler) {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-      await client.query("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE");
+      await client.query("SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
 
       const result = await handler(client);
       await client.query("COMMIT");

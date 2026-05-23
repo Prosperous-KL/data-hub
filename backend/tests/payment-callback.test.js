@@ -43,4 +43,13 @@ describe("Payment callback security", () => {
     expect(response.body.success).toBe(true);
     expect(paymentService.handleCallback).toHaveBeenCalledTimes(1);
   });
+
+  it("redirects GET callback requests to the frontend dashboard", async () => {
+    const response = await request(app)
+      .get("/api/payment/callback")
+      .query({ reference: "PAY-123" });
+
+    expect(response.statusCode).toBe(302);
+    expect(response.headers.location).toContain("/dashboard?payment_ref=PAY-123");
+  });
 });

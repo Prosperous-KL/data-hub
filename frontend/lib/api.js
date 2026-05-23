@@ -1,6 +1,6 @@
 "use client";
 
-import { getToken } from "./auth";
+import { getToken, getRefreshToken, saveSession, getUser, clearSession } from "./auth";
 
 const DEFAULT_API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 const API_URL = DEFAULT_API_URL.replace(/\/+$/, "");
@@ -42,7 +42,7 @@ function isSerializableBody(body) {
     return false;
   }
 
-  return typeof body === "object";
+  return true;
 }
 
 export async function apiRequest(path, options = {}) {
@@ -93,6 +93,67 @@ export async function apiRequest(path, options = {}) {
     }
 
     if (!response.ok) {
+      // Intercept 401 and try to refresh
+      if (response.status === 401 && !path.includes("/auth/refresh") && !path.includes("/auth/login")) {
+        const refreshToken = getRefreshToken();
+        if (refreshToken) {
+          try {
+            const refreshResponse = await fetch(`${API_URL}/auth/refresh`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ refreshToken })
+            });
+
+            if (refreshResponse.ok) {
+              const refreshData = await refreshResponse.json();
+              saveSession(refreshData.accessToken, getUser(), refreshData.refreshToken);
+              
+              // Retry the original request with the new access token
+              headers.set("Authorization", `Bearer ${refreshData.accessToken}`);
+              const retryResponse = await fetch(requestUrl, {
+                ...options,
+                method,
+                headers,
+                body
+              });
+
+              const retryText = await retryResponse.text();
+              let retryData = {};
+              if (retryText) {
+                try {
+                  retryData = JSON.parse(retryText);
+                } catch {
+                  retryData = { message: retryText };
+                }
+              }
+
+              if (retryResponse.ok) {
+                return retryData;
+              } else {
+                throw new ApiError(retryData.message || `Retry failed with status ${retryResponse.status}`, {
+                  status: retryResponse.status,
+                  code: retryData.code,
+                  data: retryData,
+                  method,
+                  url: requestUrl
+                });
+              }
+            }
+          } catch (refreshErr) {
+            clearSession();
+            if (typeof window !== "undefined") {
+              window.location.href = "/login";
+            }
+            throw new ApiError("Session expired. Please log in again.", { status: 401 });
+          }
+        }
+        
+        clearSession();
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+      }
+
       throw new ApiError(data.message || `Request failed with status ${response.status}`, {
         status: response.status,
         code: data.code,

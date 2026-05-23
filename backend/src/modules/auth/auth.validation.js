@@ -121,6 +121,18 @@ const checkUsernameAvailabilitySchema = z.object({
   })
 });
 
+const refreshSchema = z.object({
+  body: z.object({
+    refreshToken: z.string().min(1, "Refresh token is required")
+  })
+});
+
+const logoutSchema = z.object({
+  body: z.object({
+    refreshToken: z.string().min(1, "Refresh token is required")
+  })
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
@@ -130,5 +142,7 @@ module.exports = {
   passwordResetSchema,
   deleteAccountSchema,
   updateUsernameSchema,
-  checkUsernameAvailabilitySchema
+  checkUsernameAvailabilitySchema,
+  refreshSchema,
+  logoutSchema
 };

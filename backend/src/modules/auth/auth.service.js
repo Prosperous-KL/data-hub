@@ -7,25 +7,37 @@ const env = require("../../config/env");
 const ApiError = require("../../utils/apiError");
 const { sendAuthOtp } = require("./otpDelivery");
 const { verifyGoogleIdToken } = require("./social.provider");
-
-const memoryUsers = [];
-const memoryOtps = [];
+const { shouldUseMemoryFallback } = require("../../utils/memoryFallback");
+const { memoryUsers, memoryOtps, memoryTokenBlacklist } = require("../../utils/mockDb");
 let loggedMemoryFallback = false;
 let otpTableReady = false;
 
 const OTP_TTL_MINUTES = 10;
 const OTP_MAX_ATTEMPTS = 5;
 
-function buildToken(user) {
-  return jwt.sign(
+function buildTokenPair(user) {
+  const accessToken = jwt.sign(
     {
       sub: user.id,
       email: user.email,
       role: user.role
     },
     env.JWT_SECRET,
+    { expiresIn: "15m" }
+  );
+
+  const refreshToken = jwt.sign(
+    {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      type: "refresh"
+    },
+    env.JWT_SECRET,
     { expiresIn: env.JWT_EXPIRES_IN }
   );
+
+  return { accessToken, refreshToken };
 }
 
 function normalizeEmail(email) {
@@ -194,38 +206,23 @@ async function ensureOtpTable() {
   otpTableReady = true;
 }
 
-function shouldUseMemoryFallback(error) {
-  if (!error || error instanceof ApiError) {
-    return false;
-  }
-
-  const code = String(error.code || "").toUpperCase();
-  const message = String(error.message || "").toLowerCase();
-
-  return (
-    code === "ECONNREFUSED" ||
-    code === "ENOTFOUND" ||
-    code === "ETIMEDOUT" ||
-    message.includes("connect") ||
-    message.includes("database") ||
-    message.includes("timeout")
-  );
-}
 
 function shouldUseDevOtpDeliveryFallback(error) {
   if (!(error instanceof ApiError)) {
     return false;
   }
 
-  // Allow SMS fallback for any SMS delivery error (unavailable, failed, not configured)
-  // This ensures system functionality when SMS provider is unavailable or misconfigured
+  // Allow SMS, WhatsApp, and Email fallback for any delivery error in development
   return [
     "SMS_DELIVERY_FAILED",
     "SMS_PROVIDER_ERROR",
     "SMS_DELIVERY_NOT_CONFIGURED",
     "WHATSAPP_DELIVERY_FAILED",
     "WHATSAPP_PROVIDER_ERROR",
-    "WHATSAPP_DELIVERY_NOT_CONFIGURED"
+    "WHATSAPP_DELIVERY_NOT_CONFIGURED",
+    "EMAIL_DELIVERY_NOT_CONFIGURED",
+    "EMAIL_DELIVERY_FAILED",
+    "EMAIL_PROVIDER_ERROR"
   ].includes(error.code);
 }
 
@@ -276,6 +273,7 @@ async function registerInMemory({ fullName, email, phone, password }) {
 
   memoryUsers.push(user);
 
+  const tokens = buildTokenPair(user);
   return {
     user: {
       id: user.id,
@@ -286,7 +284,9 @@ async function registerInMemory({ fullName, email, phone, password }) {
       role: user.role,
       created_at: user.created_at
     },
-    token: buildToken(user)
+    token: tokens.accessToken,
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken
   };
 }
 
@@ -397,9 +397,10 @@ async function verifyOtpRecord({ otpSessionId, purpose, channel, target, otpCode
     await ensureOtpTable();
 
     const result = await pool.query(
-      `SELECT id, purpose, channel, target, code_hash, attempts, expires_at, consumed_at
-       FROM otp_codes
-       WHERE id = $1`,
+      `UPDATE otp_codes
+       SET attempts = attempts + 1
+       WHERE id = $1
+       RETURNING id, purpose, channel, target, code_hash, attempts, expires_at, consumed_at`,
       [otpSessionId]
     );
 
@@ -416,7 +417,7 @@ async function verifyOtpRecord({ otpSessionId, purpose, channel, target, otpCode
       throw new ApiError(400, "OTP already used", "OTP_ALREADY_USED");
     }
 
-    if (otp.attempts >= OTP_MAX_ATTEMPTS) {
+    if (otp.attempts > OTP_MAX_ATTEMPTS) {
       throw new ApiError(429, "Too many OTP attempts", "OTP_ATTEMPTS_EXCEEDED");
     }
 
@@ -426,12 +427,6 @@ async function verifyOtpRecord({ otpSessionId, purpose, channel, target, otpCode
 
     const expectedHash = buildOtpDigest({ code: otpCode, target: normalizedTarget, purpose });
     if (expectedHash !== otp.code_hash) {
-      await pool.query(
-        `UPDATE otp_codes
-         SET attempts = attempts + 1
-         WHERE id = $1`,
-        [otpSessionId]
-      );
       throw new ApiError(400, "Invalid OTP code", "INVALID_OTP_CODE");
     }
 
@@ -476,6 +471,29 @@ async function requestOtp({ purpose, channel, target }) {
         throw error;
       }
       logMemoryFallbackOnce(error);
+    }
+  }
+
+  if (purpose === "PASSWORD_RESET" || purpose === "ACCOUNT_DELETE") {
+    const field = channel === "EMAIL" ? "email" : "phone";
+    if (channel === "PHONE" || channel === "WHATSAPP" || channel === "EMAIL") {
+      try {
+        const existing = await pool.query(`SELECT id FROM users WHERE ${field} = $1 LIMIT 1`, [normalizedTarget]);
+        if (existing.rows.length === 0) {
+          throw new ApiError(404, "No account found with this email/phone", "ACCOUNT_NOT_FOUND");
+        }
+      } catch (error) {
+        if (!shouldUseMemoryFallback(error)) {
+          throw error;
+        }
+        logMemoryFallbackOnce(error);
+        const existsInMemory = memoryUsers.some((u) => 
+          channel === "EMAIL" ? u.email === normalizedTarget : u.phone === normalizedTarget
+        );
+        if (!existsInMemory) {
+          throw new ApiError(404, "No account found with this email/phone", "ACCOUNT_NOT_FOUND");
+        }
+      }
     }
   }
 
@@ -564,6 +582,7 @@ async function loginInMemory({ email, password }) {
     throw new ApiError(401, "Invalid credentials", "INVALID_CREDENTIALS");
   }
 
+  const tokens = buildTokenPair(user);
   return {
     user: {
       id: user.id,
@@ -574,7 +593,9 @@ async function loginInMemory({ email, password }) {
       role: user.role,
       created_at: user.created_at
     },
-    token: buildToken(user)
+    token: tokens.accessToken,
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken
   };
 }
 
@@ -623,9 +644,12 @@ async function register({ fullName, email, phone, password, otpSessionId, otpCod
       return user;
     });
 
+    const tokens = buildTokenPair(result);
     return {
       user: result,
-      token: buildToken(result)
+      token: tokens.accessToken,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken
     };
   } catch (error) {
     if (shouldUseMemoryFallback(error)) {
@@ -723,7 +747,7 @@ async function login({ email, password }) {
 
   try {
     const result = await pool.query(
-      `SELECT id, full_name, username, email, phone, password_hash, role, created_at
+      `SELECT id, full_name, username, email, phone, password_hash, role, is_active, created_at
        FROM users
        WHERE email = $1`,
       [normalizedEmail]
@@ -734,12 +758,18 @@ async function login({ email, password }) {
     }
 
     const user = result.rows[0];
+    
+    if (!user.is_active) {
+      throw new ApiError(403, "Account deactivated", "ACCOUNT_DEACTIVATED");
+    }
+
     const matches = await bcrypt.compare(password, user.password_hash);
 
     if (!matches) {
       throw new ApiError(401, "Invalid credentials", "INVALID_CREDENTIALS");
     }
 
+    const tokens = buildTokenPair(user);
     return {
       user: {
         id: user.id,
@@ -750,7 +780,9 @@ async function login({ email, password }) {
         role: user.role,
         created_at: user.created_at
       },
-      token: buildToken(user)
+      token: tokens.accessToken,
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken
     };
   } catch (error) {
     if (shouldUseMemoryFallback(error)) {
@@ -1003,10 +1035,107 @@ async function updateUsername({ userId, username, fullName }) {
     throw error;
   }
 }
+async function refreshToken(token) {
+  try {
+    const payload = jwt.verify(token, env.JWT_SECRET);
+    if (payload.type !== "refresh") {
+      throw new ApiError(401, "Invalid token type", "INVALID_TOKEN_TYPE");
+    }
+
+    // Check if blacklisted in database
+    try {
+      const checkRes = await pool.query(
+        `SELECT token FROM jwt_blacklist WHERE token = $1`,
+        [token]
+      );
+      if (checkRes.rows.length > 0) {
+        throw new ApiError(401, "Token has been revoked", "TOKEN_REVOKED");
+      }
+    } catch (dbErr) {
+      // Memory fallback check
+      if (shouldUseMemoryFallback(dbErr)) {
+        if (memoryTokenBlacklist.includes(token)) {
+          throw new ApiError(401, "Token has been revoked", "TOKEN_REVOKED");
+        }
+      } else {
+        throw dbErr;
+      }
+    }
+
+    // Get user details
+    let user;
+    try {
+      const userRes = await pool.query(
+        `SELECT id, email, role, is_active FROM users WHERE id = $1`,
+        [payload.sub]
+      );
+      if (userRes.rows.length === 0) {
+        throw new ApiError(404, "User not found", "USER_NOT_FOUND");
+      }
+      user = userRes.rows[0];
+    } catch (dbErr) {
+      if (shouldUseMemoryFallback(dbErr)) {
+        user = memoryUsers.find(u => u.id === payload.sub);
+        if (!user) {
+          throw new ApiError(404, "User not found", "USER_NOT_FOUND");
+        }
+      } else {
+        throw dbErr;
+      }
+    }
+
+    if (!user.is_active) {
+      throw new ApiError(403, "Account deactivated", "ACCOUNT_DEACTIVATED");
+    }
+
+    const tokens = buildTokenPair(user);
+    return tokens;
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    throw new ApiError(401, "Invalid refresh token", "INVALID_REFRESH_TOKEN");
+  }
+}
+
+async function logout(accessToken, refreshToken) {
+  // Decode access token to get expiry
+  let accessExpiry = new Date(Date.now() + 15 * 60 * 1000); // fallback 15m
+  try {
+    const decodedAccess = jwt.decode(accessToken);
+    if (decodedAccess && decodedAccess.exp) {
+      accessExpiry = new Date(decodedAccess.exp * 1000);
+    }
+  } catch (_) {}
+
+  // Decode refresh token to get expiry
+  let refreshExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // fallback 7d
+  try {
+    const decodedRefresh = jwt.decode(refreshToken);
+    if (decodedRefresh && decodedRefresh.exp) {
+      refreshExpiry = new Date(decodedRefresh.exp * 1000);
+    }
+  } catch (_) {}
+
+  try {
+    // Insert both tokens into blacklist
+    await pool.query(
+      `INSERT INTO jwt_blacklist (token, expires_at) VALUES ($1, $2), ($3, $4) ON CONFLICT DO NOTHING`,
+      [accessToken, accessExpiry, refreshToken, refreshExpiry]
+    );
+  } catch (dbErr) {
+    if (shouldUseMemoryFallback(dbErr)) {
+      memoryTokenBlacklist.push(accessToken);
+      memoryTokenBlacklist.push(refreshToken);
+    } else {
+      throw dbErr;
+    }
+  }
+}
 
 module.exports = {
   register,
   login,
+  refreshToken,
+  logout,
   requestOtp,
   requestPasswordRecoveryOtp,
   requestGoogleSocialRecoveryOtp,

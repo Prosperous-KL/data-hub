@@ -26,11 +26,17 @@ function errorHandler(err, _req, res, _next) {
     userMessage = "Internal server error";
   }
 
-  return res.status(statusCode).json({
+  const response = {
     success: false,
     code: err.code || "INTERNAL_SERVER_ERROR",
     message: userMessage
-  });
+  };
+
+  if (!isProduction && err.details) {
+    response.details = err.details;
+  }
+
+  return res.status(statusCode).json(response);
 }
 
 module.exports = {

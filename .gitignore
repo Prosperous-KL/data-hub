@@ -67,3 +67,12 @@ coverage/
 
 # Docker
 .dockerignore
+
+# Plans and updates documents
+CLEANUP_SUMMARY.md
+docs/PRODUCTION_CHECKLIST.md
+docs/PRODUCTION_READY.md
+implementation_plan.md
+walkthrough.md
+task.md
+project_audit.md

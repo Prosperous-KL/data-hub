@@ -1,5 +1,7 @@
 const express = require("express");
 const router = express.Router();
+const { z } = require("zod");
+const validate = require("../../middleware/validate");
 const { authRequired } = require("../../middleware/auth");
 const bundleService = require("./bundle.service");
 const vtuService = require("../vtu/vtu.service");
@@ -36,19 +38,24 @@ router.get("/pricing/:network", authRequired, async (req, res, next) => {
   }
 });
 
+const pricingUpdateSchema = z.object({
+  body: z.object({
+    bundles: z.array(z.object({
+      code: z.string().min(1),
+      profit: z.coerce.number().min(0)
+    })).min(1)
+  })
+});
+
 // POST /api/bundles/pricing/:network - Set custom pricing for bundles
-router.post("/pricing/:network", authRequired, async (req, res, next) => {
+router.post("/pricing/:network", authRequired, validate(pricingUpdateSchema), async (req, res, next) => {
   try {
     const { network } = req.params;
-    const { bundles } = req.body;
+    const { bundles } = req.validated.body;
     const userId = req.user.sub;
     
     if (!NETWORKS.includes(network)) {
       return res.status(400).json({ error: "Invalid network" });
-    }
-
-    if (!Array.isArray(bundles)) {
-      return res.status(400).json({ error: "bundles must be an array" });
     }
 
     const updates = bundles.map(b => ({

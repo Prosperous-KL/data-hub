@@ -5,24 +5,7 @@ const { idempotencyGuard, memoryIdempotencyStore } = require("../../middleware/i
 const pool = require("../../db/pool");
 const { buyDataSchema } = require("./vtu.validation");
 const vtuService = require("./vtu.service");
-
-function shouldUseMemoryFallback(error) {
-  if (!error) {
-    return false;
-  }
-
-  const code = String(error.code || "").toUpperCase();
-  const message = String(error.message || "").toLowerCase();
-
-  return (
-    code === "ECONNREFUSED" ||
-    code === "ENOTFOUND" ||
-    code === "ETIMEDOUT" ||
-    message.includes("connect") ||
-    message.includes("database") ||
-    message.includes("timeout")
-  );
-}
+const { shouldUseMemoryFallback } = require("../../utils/memoryFallback");
 
 const router = express.Router();
 
