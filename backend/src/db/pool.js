@@ -2,17 +2,22 @@ const { Pool } = require("pg");
 const env = require("../config/env");
 
 function getSslConfig() {
-  if (env.NODE_ENV !== "production") {
+  if (!env.DATABASE_URL) {
     return false;
   }
 
-  // Most managed Postgres providers (Render, Supabase, Neon) use trusted CAs.
-  // Only disable verification if the operator explicitly opts out.
+  const isLocal = env.DATABASE_URL.includes("localhost") || env.DATABASE_URL.includes("127.0.0.1");
+  if (isLocal) {
+    return false;
+  }
+
+  // Most managed Postgres providers (Render, Supabase, Neon) require SSL.
   if (process.env.DATABASE_SSLMODE === "no-verify") {
     return { rejectUnauthorized: false };
   }
 
-  return { rejectUnauthorized: true };
+  // Disable rejectUnauthorized for SSL connections to prevent cert chain issues with managed DBs
+  return { rejectUnauthorized: false };
 }
 
 const pool = new Pool({
